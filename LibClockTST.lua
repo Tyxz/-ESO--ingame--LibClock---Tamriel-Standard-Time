@@ -1,10 +1,29 @@
+-------------------
+-- Utility
+-------------------
 
-
+--- Makes a table read-only
+--- Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html
+--- @param table
+--- @return constant table
+local function Protect(tbl)
+    return setmetatable({}, {
+        __index = tbl,
+        __newindex = function(t, key, value)
+            error("attempting to change constant " ..
+                   tostring(key) .. " to " .. tostring(value), 2)
+        end
+    })
+end
 
 -------------------
 -- Constants
 -------------------
-local TST = {}
+local TST = {
+    updateDelay = 200,
+    moonUpdateDelay = 36000000,
+}
+
 LibClockTST = TST
 
 local ID, MAJOR, MINOR = "LibClockTST", "LibClockTST-1.0", 0
@@ -14,19 +33,16 @@ local em = EVENT_MANAGER
 
 local const = TST.CONSTANTS
 
-const = {
+const = Protect({
     time = {
         lengthOfDay = 20955, -- length of one day in s (default 5.75h right now)
         lengthOfNight = 7200, -- length of only the night in s (2h)
         lengthOfHour = 873.125,
-        startTime = 1398044126, -- exact unix time at ingame noon to calculated game time start in s
-        startTimeOffset = -10477.5 -- offset in s, because we need 12 am not pm
+        startTime = 1398033648.5, -- exact unix time at ingame noon as unix timestamp 1398044126 minus offset from midnight 10477.5 (lengthOfDay/2) in s
     },
     date = {
-        startDate = 1396569600, -- Eso Release  04.04.2014  UNIX: 1396569600
-        startDateOffset = -1969770, -- in s; 4th day + 4th month (31 + 28 + 31) = 94 days gone in the first year at start
-        startDateTimeOffset = -18153.5, -- in s; difference between the synced time at midnight and the start date
-        startWeekDay = 5,
+        startTime = 1394617983.724, -- Eso Release  04.04.2014  UNIX: 1396569600 minus calculated offset to midnight 2801.2760416667 minus offset of days to 1.1.582, 1948815 ((31 + 28 + 31 + 3) * const.time.lengthOfDay)
+        startWeekDay = 2, -- Start day was Friday (5) but start time of calculation is 93 days before. Therefore, the weekday is (4 - 93)%7
         startYear = 582, -- offset in years, because the game starts in 2E 582
         startEra = 2,
         monthLength = {
@@ -54,22 +70,43 @@ const = {
         singlePhaseLength = 3.75, -- in ingame days
         singlePhaseLengthInSeconds = 78581.25, -- in s, singlePhaseLength * dayLength
         phasesPercentage = { -- https://esoclock.uesp.net/
-            new = 0.06,
-            waxingCrescent = 0.185,
-            firstQuarter = 0.31,
-            waxingGibbonus = 0.435,
-            full = 0.56,
-            waningGibbonus = 0.685,
-            thirdQuarter = 0.81,
-            waningCrescent = 0.935
+            [1] = { 
+                name = "new", 
+                endPercentage = 0.06,
+            },
+            [2] = { 
+                name = "waxingCrescent", 
+                endPercentage = 0.185,
+            },
+            [3] = { 
+                name = "firstQuarter", 
+                endPercentage = 0.31,
+            },
+            [4] = { 
+                name = "waxingGibbonus", 
+                endPercentage = 0.435,
+            },
+            [5] = { 
+                name = "full", 
+                endPercentage = 0.56,
+            },
+            [6] = { 
+                name = "waningGibbonus", 
+                endPercentage = 0.685,
+            },
+            [7] = { 
+                name = "thirdQuarter", 
+                endPercentage = 0.81,
+            },
+            [8] = { 
+                name = "waningCrescent", 
+                endPercentage = 0.935,
+            },
         },
         phasesPercentageOffsetToEnd = 0.065,
         phasesPercentageBetweenPhases = 0.125,
     },
-}
-
-local gameStartTime = const.time.startTime + const.time.startTimeOffset
-local gameDateStartTime = const.date.startDate + const.date.startDateOffset + const.date.startDateTimeOffset
+})
 
 -------------------
 -- Calculation
@@ -87,7 +124,7 @@ local moon
 -- @param timestamp [optional]
 -- @return date object {era, year, month, day, weekDay}
 local function CalculateTST(timestamp) 
-    local timeSinceStart = timestamp - gameStartTime
+    local timeSinceStart = timestamp - const.time.startTime
     local secondsSinceMidnight = timeSinceStart % const.time.lengthOfDay
     local tst = 24 * secondsSinceMidnight / const.time.lengthOfDay
 
@@ -112,7 +149,7 @@ end
 -- @param timestamp [optional]
 -- @return date object {era, year, month, day, weekDay}
 local function CalculateTSTDate(timestamp)
-    local timeSinceStart = timestamp - gameDateStartTime
+    local timeSinceStart = timestamp - const.date.startTime
     local daysPast = math.floor(timeSinceStart / const.time.lengthOfDay)
     local w = (daysPast + const.date.startWeekDay) % 7 + 1
 
@@ -120,11 +157,11 @@ local function CalculateTSTDate(timestamp)
     daysPast = daysPast - y * const.date.yearLength
     y = y + const.date.startYear
     local m = 1
-    while daysPast > const.date.monthLength[m] do
+    while daysPast >= const.date.monthLength[m] do
         daysPast = daysPast - const.date.monthLength[m]
         m = m + 1
     end
-    local d = daysPast
+    local d = daysPast + 1
 
     needToUpdateDate = false
 
@@ -135,8 +172,8 @@ end
 -- @param phasePercentage percentage already pased in the current phase
 -- @return string of current moon phase
 local function GetCurrentPhaseName(phasePercentage)
-    for phaseName, endPercentage in pairs(const.moon.phasePercentage) do
-        if phasePercentage < endPercentage then return phaseName end
+    for _, phase in ipairs(const.moon.phasesPercentage) do
+        if phasePercentage < phase.endPercentage then return phase.name end
     end
 end
 
@@ -146,10 +183,10 @@ end
 -- @return number of seconds until the moon is full again
 local function GetSecondsUntilFullMoon(phasePercentage)
     local secondsOffset = -phasePercentage * const.moon.phaseLengthInSeconds
-    if phasePercentage > const.moon.phasesPercentage.full then 
+    if phasePercentage > const.moon.phasesPercentage[5].endPercentage then 
         secondsOffset = secondsOffset + const.moon.phaseLengthInSeconds
     end
-    local secondsUntilFull = const.moon.phasesPercentage.waxingGibbonus * const.moon.phaseLengthInSeconds + secondsOffset
+    local secondsUntilFull = const.moon.phasesPercentage[4].endPercentage * const.moon.phaseLengthInSeconds + secondsOffset
     return secondsUntilFull
 end
 
@@ -162,11 +199,11 @@ local function CalculateMoon(timestamp)
     local timeSinceStart = timestamp - const.moon.startTime
     local secondsSinceNewMoon = timeSinceStart % const.moon.phaseLengthInSeconds
     local phasePercentage = secondsSinceNewMoon / const.moon.phaseLengthInSeconds
-    local isWaxing = phasePercentage <= moon.phasesPercentage.waxingGibbonus
+    local isWaxing = phasePercentage <= const.moon.phasesPercentage[4].endPercentage
     local currentPhaseName = GetCurrentPhaseName(phasePercentage)
     local percentageOfNextPhase = phasePercentage % const.moon.phasesPercentageBetweenPhases
     local secondsUntilNextPhase = percentageOfNextPhase * const.moon.singlePhaseLengthInSeconds
-    local daysUntilNextPhase = percentageOfNextPhase * const.moon.daysUntilNextPhase
+    local daysUntilNextPhase = percentageOfNextPhase * const.moon.singlePhaseLength
     local secondsUntilFullMoon = GetSecondsUntilFullMoon(phasePercentage)
     local daysUntilFullMoon = secondsUntilFullMoon / const.time.lengthOfDay
 
@@ -187,6 +224,7 @@ end
 local function Update() 
     local systemTime = GetTimeStamp()
     time = CalculateTST(systemTime)
+    needToUpdateDate = true -- TODO: Remove
     if needToUpdateDate then
         date = CalculateTSTDate(systemTime)
     end
@@ -256,7 +294,7 @@ end
 local function RegisterCommands()
     SLASH_COMMANDS["/tst"] = function (extra)
         local options = {}
-        local searchResult = { string.match(option,"^(%S*)%s*(.-)$") }
+        local searchResult = { string.match(extra,"^(%S*)%s*(.-)$") }
         for i,v in pairs(searchResult) do
             if (v ~= nil and v ~= "") then
                 options[i] = string.lower(v)
@@ -277,8 +315,11 @@ local listener = {}
 
 --- Event to update the time and date and its listeners
 local function OnUpdate()
+
     local tNeedToUpdateDate = needToUpdateDate
     Update()
+    assert(time, "Time object is empty")
+    assert(date, "Date object is empty")
     if tNeedToUpdateDate then
         for _, f in pairs(dateListener) do
             f(date)
@@ -296,7 +337,9 @@ end
 
 --- Event to update the moon and its listeners
 local function OnMoonUpdate()
+
     MoonUpdate()
+    assert(moon, "Moon object is empty")
     for _, f in pairs(moonListener) do
         f(moon)
     end
@@ -316,13 +359,18 @@ em:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
 -- Public
 -------------------
 
+function TST:New(updateDelay, moonUpdateDelay)
+    self.updateDelay = updateDelay or self.updateDelay
+    self.moonUpdateDelay = moonUpdateDelay or self.moonUpdateDelay
+    return self
+end
+
 --- Get the lore time
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned, 
 -- otherwise it will be the current time.
 -- @param timestamp [optional]
 -- @return date object {era, year, month, day, weekDay}
-function TST:GetTime(timestamp)    
-    local t = time
+function TST:GetTime(timestamp)
     if timestamp then
         local tNeedToUpdateDate = needToUpdateDate
         local t = CalculateTST(timestamp)
@@ -375,7 +423,7 @@ function TST:Register(addonId, func)
     assert(func, "Please provide a function: func(time, date) to be called every second for a time update.")
     assert(not listener[addonId] , addonId .. " already subscribes.")
     listener[addonId] = func
-    em:RegisterForUpdate(eventHandle, 1000, OnUpdate)
+    em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 end
 
 --- Cancel a subscription for the date and time updates.
@@ -399,7 +447,7 @@ function TST:RegisterForTime(addonId, func)
     assert(func, "Please provide a function: func(time) to be called every second for a time update.")
     assert(not timeListener[addonId], addonId .. " already subscribes.")
     timeListener[addonId] = func
-    em:RegisterForUpdate(eventHandle.."-Time", 1000, OnUpdate)
+    em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 end
 
 --- Cancel a subscription for the time updates.
@@ -423,7 +471,7 @@ function TST:RegisterForDate(addonId, func)
     assert(func, "Please provide a function: func(date) to be called every second for a time update.")
     assert(not dateListener[addonId], addonId .. " already subscribes.")
     dateListener[addonId] = func
-    em:RegisterForUpdate(eventHandle.."-Date", 1000, OnUpdate)
+    em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 end
 
 --- Cancel a subscription for the date updates.
@@ -445,9 +493,13 @@ end
 function TST:RegisterForMoon(addonId, func)
     assert(addonId, "Please provide an ID for the addon. Store it to cancel the subscription later.")
     assert(func, "Please provide a function: func(moon) to be called every second for a time update.")
-    assert(not dateListener[addonId], addonId .. " already subscribes.")
-    dateListener[addonId] = func
-    em:RegisterForUpdate(eventHandle.."-Moon", 3600000, OnMoonUpdate) -- once per hour should be enough
+    assert(not moonListener[addonId], addonId .. " already subscribes.")
+    moonListener[addonId] = func
+    em:RegisterForUpdate(eventHandle.."-Moon", self.moonUpdateDelay, OnMoonUpdate) -- once per hour should be enough
+
+    -- Update once
+    MoonUpdate()
+    func(moon)
 end
 
 --- Cancel a subscription for the moon updates.
@@ -455,8 +507,8 @@ end
 -- @see TST:CancelSubscription
 function TST:CancelMoonSubscription(addonId)
     assert(addonId, "Please provide an ID to cancel the subscription.")
-    assert(dateListener[addonId], "Subscription could not be found.")
-    dateListener[addonId] = nil
+    assert(moonListener[addonId], "Subscription could not be found.")
+    moonListener[addonId] = nil
     if #moonListener == 0  then
         em:UnregisterForUpdate(eventHandle.."-Moon")
     end
