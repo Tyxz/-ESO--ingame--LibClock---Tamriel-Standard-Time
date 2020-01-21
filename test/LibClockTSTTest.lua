@@ -56,6 +56,16 @@ local const = TST.CONSTANTS
     end)
 
     describe("moon", function()
+
+        it("should calculate moon", function()
+            assert.truthy(LibClockTST:GetMoon())
+        end)
+
+        it("should calculate moon to be 51% full and first quarter", function()
+            local time = 1579645663
+            local moon = TST:GetMoon(time)
+            assert.are.same({ math.floor(moon.percentageOfFullMoon*100), moon.currentPhaseName}, {51, "firstQuarter"})
+        end)
     end)
 
     describe("subscription", function()

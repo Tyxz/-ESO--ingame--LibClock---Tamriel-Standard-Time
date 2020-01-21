@@ -205,9 +205,9 @@ end
 
 --- Calculate the lore moon
 -- @param timestamp UNIX to be calculated from
--- @return moon object { phasePercentage, currentPhaseName, isWaxing,
---      percentageOfNextPhase, secondsUntilNextPhase, daysUntilNextPhase,
---      secondsUntilFullMoon, daysUntilFullMoon }
+-- @return moon object { percentageOfPhaseDone, currentPhaseName, isWaxing,
+--      percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
+--      secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
 local function CalculateMoon(timestamp)
 	local timeSinceStart = timestamp - const.moon.startTime
 	local secondsSinceNewMoon = timeSinceStart % const.moon.phaseLengthInSeconds
@@ -219,16 +219,23 @@ local function CalculateMoon(timestamp)
 	local daysUntilNextPhase = percentageOfNextPhase * const.moon.singlePhaseLength
 	local secondsUntilFullMoon = GetSecondsUntilFullMoon(phasePercentage)
 	local daysUntilFullMoon = secondsUntilFullMoon / const.time.lengthOfDay
+    local percentageOfFullMoon
+    if phasePercentage > 0.5 then  
+        percentageOfFullMoon = 1 - (phasePercentage - 0.5) * 2
+    else
+        percentageOfFullMoon = phasePercentage * 2
+    end
 
 	return {
-		phasePercentage = phasePercentage,
+		percentageOfPhaseDone = phasePercentage,
 		currentPhaseName = currentPhaseName,
 		isWaxing = isWaxing,
-		percentageOfNextPhase = percentageOfNextPhase,
+		percentageOfCurrentPhaseDone = percentageOfNextPhase,
 		secondsUntilNextPhase = secondsUntilNextPhase,
 		daysUntilNextPhase = daysUntilNextPhase,
 		secondsUntilFullMoon = secondsUntilFullMoon,
-		daysUntilFullMoon = daysUntilFullMoon
+		daysUntilFullMoon = daysUntilFullMoon,
+        percentageOfFullMoon = percentageOfFullMoon
 	}
 end
 
@@ -247,25 +254,6 @@ end
 local function MoonUpdate()
 	local systemTime = GetTimeStamp()
 	moon = CalculateMoon(systemTime)
-end
-
---- Body for public get functions
--- @param timestamp UNIX timestamp in s or nil
--- @param CalculateFunction function to be called for value if timestamp was given
--- @param UpdateFunction function to be called to update returnTable
--- @param returnTable object to be returned
-local function GetValue(timestamp, CalculateFunction, UpdateFunction, returnTable)
-	if timestamp then
-        assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
-        timestamp = tonumber(timestamp)
-		local tNeedToUpdateDate = needToUpdateDate
-		local obj = CalculateFunction(timestamp)
-		needToUpdateDate = tNeedToUpdateDate
-		return obj
-	else
-		UpdateFunction()
-		return returnTable
-	end
 end
 
 -------------------
