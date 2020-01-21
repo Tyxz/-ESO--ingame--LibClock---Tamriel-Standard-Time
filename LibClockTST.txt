@@ -26,4 +26,4 @@
 ## LibClock - TST ##
 ####################
 
-lib/LibClockTST.lua
+Lib/LibClockTST.lua

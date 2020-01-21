@@ -1,2 +1,2 @@
 language = "lua"
-run = "luarocks install busted --local && /home/runner/.luarocks/bin/busted test/LibClockTSTTest.lua"
+run = "luarocks install busted --local && /home/runner/.luarocks/bin/busted Test/LibClockTSTTest.lua"
