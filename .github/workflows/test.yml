@@ -16,4 +16,4 @@ jobs:
     - name: build
       run: luarocks install busted
     - name: test
-      run: busted -o utfTerminal test/LibClockTSTTest.lua
+      run: busted -o utfTerminal Test/LibClockTSTTest.lua
