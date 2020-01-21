@@ -11,7 +11,7 @@ local TST = {
 --- Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html
 --- @param table
 --- @return constant table
-local function Protect(tbl)
+function TST:Protect(tbl)
 	return setmetatable({}, {
 		__index = tbl,
 		__newindex = function(t, key, value)
@@ -20,7 +20,6 @@ local function Protect(tbl)
 		end
 	})
 end
-TST:Protect = Protect
 
 local function IsNotNilOrEmpty(obj) 
     return obj ~= nil and string.match(tostring(obj), "^%s*$") == nil
@@ -119,7 +118,7 @@ local const = {
 	},
 }
 
-TST.CONSTANTS = Protect(const)
+TST.CONSTANTS = TST:Protect(const)
 
 LibClockTST = TST
 
