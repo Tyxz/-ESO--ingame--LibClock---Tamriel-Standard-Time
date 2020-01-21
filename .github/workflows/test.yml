@@ -14,9 +14,6 @@ jobs:
     - uses: leafo/gh-actions-luarocks@v2
 
     - name: build
-      run: |
-        luarocks install busted
-        luarocks make
+      run: luarocks install busted
     - name: test
-      run: |
-        busted -o utfTerminal test/LibClockTSTTest.lua
+      run: busted -o utfTerminal test/LibClockTSTTest.lua
