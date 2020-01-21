@@ -1,3 +1,8 @@
+local TST = {
+	updateDelay = 200,
+	moonUpdateDelay = 36000000,
+}
+
 -------------------
 -- Utility
 -------------------
@@ -15,6 +20,7 @@ local function Protect(tbl)
 		end
 	})
 end
+TST:Protect = Protect
 
 local function IsNotNilOrEmpty(obj) 
     return obj ~= nil and string.match(tostring(obj), "^%s*$") == nil
@@ -32,10 +38,6 @@ end
 -------------------
 -- Constants
 -------------------
-local TST = {
-	updateDelay = 200,
-	moonUpdateDelay = 36000000,
-}
 
 local ID, MAJOR, MINOR = "LibClockTST", "LibClockTST-1.0", 0
 local eventHandle = table.concat({MAJOR, MINOR}, "r")
