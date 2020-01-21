@@ -21,10 +21,9 @@
 ## AddOnVersion: 0
 ## APIVersion: 100029
 ## IsLibrary: true
-## OptionalDependsOn: LibDebugLogger
 
 ####################
 ## LibClock - TST ##
 ####################
 
-LibClockTST.lua
+lib/LibClockTST.lua
