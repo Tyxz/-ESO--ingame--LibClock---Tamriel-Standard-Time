@@ -347,7 +347,7 @@ end
 
 -- Register the slash command 'LibClockTST'
 local function RegisterCommands()
-	SLASH_COMMANDS["/LibClockTST"] = function (extra)
+	SLASH_COMMANDS["/tst"] = function (extra)
 		local options = {}
 		local searchResult = { string.match(extra,"^(%S*)%s*(.-)$") }
 		for i,v in pairs(searchResult) do
