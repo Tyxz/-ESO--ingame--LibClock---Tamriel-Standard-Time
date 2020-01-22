@@ -17,9 +17,9 @@ LibClockTST = {
 	moonUpdateDelay = 36000000,
 }
 
--------------------
+-- -----------------
 -- Utility
--------------------
+-- -----------------
 
 --- Makes a table read-only
 -- Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html
@@ -35,21 +35,21 @@ local function Protect(tbl)
 	})
 end
 
---- Check if string is nil or empty
+-- Check if string is nil or empty
 -- @param obj string to be checked
 -- @return bool if it is not nil or empty
 local function IsNotNilOrEmpty(obj) 
     return obj ~= nil and string.match(tostring(obj), "^%s*$") == nil
 end
 
---- Check if object is a string
+-- Check if object is a string
 -- @param obj string to be checked
 -- @return bool if it is a string
 local function IsString(str) 
     return type(str) == "string"
 end
 
---- Check if input is a timestamp
+-- Check if input is a timestamp
 -- @param timestamp object to be checked
 -- @return bool if it matches the condition
 local function IsTimestamp(timestamp)
@@ -57,9 +57,9 @@ local function IsTimestamp(timestamp)
     return string.match(tostring(timestamp), "^%d%d%d%d%d%d%d%d%d%d$") ~= nil
 end
 
--------------------
+-- -----------------
 -- Constants
--------------------
+-- -----------------
 
 local ID, MAJOR, MINOR = "LibClockTST", "LibClockTST-1.0", 0
 local eventHandle = table.concat({MAJOR, MINOR}, "r")
@@ -71,15 +71,15 @@ LibClockTST.CONSTANTS = {
 	time = {
 		lengthOfDay = 20955, -- length of one day in s (default 5.75h right now)
 		lengthOfNight = 7200, -- length of only the night in s (2h)
-		lengthOfHour = 873.125,
+		lengthOfHour = 873.125, -- length of an in-game hour in s
 		startTime = 1398033648.5, -- exact unix time at ingame noon as unix timestamp 1398044126 minus offset from midnight 10477.5 (lengthOfDay/2) in s
 	},
 	date = {
 		startTime = 1394617983.724, -- Eso Release  04.04.2014  UNIX: 1396569600 minus calculated offset to midnight 2801.2760416667 minus offset of days to 1.1.582, 1948815 ((31 + 28 + 31 + 3) * const.time.lengthOfDay)
 		startWeekDay = 2, -- Start day was Friday (5) but start time of calculation is 93 days before. Therefore, the weekday is (4 - 93)%7
 		startYear = 582, -- offset in years, because the game starts in 2E 582
-		startEra = 2,
-		monthLength = {
+		startEra = 2, -- era the world is in 
+		monthLength = { -- different length of month within the year in days
 			[1] = 31,
 			[2] = 28,
 			[3] = 31,
@@ -92,12 +92,10 @@ LibClockTST.CONSTANTS = {
 			[10] = 31,
 			[11] = 30,
 			[12] = 31,
-		}, -- length of months
-		yearLength = 365,
+		},
+		yearLength = 365, -- length of the in-game year in days
 	},
 	moon = {
-		--Unix time of the start of the full moon phase in s - old 1425169441 and 1407553200
-		--New time is for new moon
 		startTime = 1436153095, -- 1435838770 from https://esoclock.uesp.net/ + half phase = 1436153095 - phaseOffsetToEnd * phaseLengthInSeconds = 1436112233
 		phaseLength = 30, -- ingame days
 		phaseLengthInSeconds = 628650, -- in s, phaseLength * dayLength
@@ -137,17 +135,16 @@ LibClockTST.CONSTANTS = {
 				endPercentage = 0.935,
 			},
 		},
-		phasesPercentageOffsetToEnd = 0.065,
-		phasesPercentageBetweenPhases = 0.125,
+		phasesPercentageBetweenPhases = 0.125, -- length in percentage of whole phase of each single phase
 	},
 }
 local const = Protect(LibClockTST.CONSTANTS)
 
 LibClockTST.CONSTANTS = const
 
--------------------
+-- -----------------
 -- Calculation
--------------------
+-- -----------------
 
 local lastCalculatedHour
 local needToUpdateDate = true
@@ -155,7 +152,7 @@ local time
 local date
 local moon
 
---- Get the lore time
+-- Get the lore time
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 -- otherwise it will be the current time.
 -- @param[opt] timestamp UNIX timestamp in s
@@ -180,7 +177,7 @@ local function CalculateLibClockTST(timestamp)
 	return { hour = h, minute = m, second = s }
 end
 
---- Get the lore date
+-- Get the lore date
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 -- otherwise it will be calculated from the current time.
 -- @param[opt] timestamp UNIX timestamp in s
@@ -205,7 +202,7 @@ local function CalculateLibClockTSTDate(timestamp)
 	return {era = const.date.startEra, year = y, month = m, day = d, weekDay = w }
 end
 
---- Get the name of the current moon phase
+-- Get the name of the current moon phase
 -- @param phasePercentage percentage already pased in the current phase
 -- @return current moon phase string
 local function GetCurrentPhaseName(phasePercentage)
@@ -214,7 +211,7 @@ local function GetCurrentPhaseName(phasePercentage)
 	end
 end
 
---- Calculate the seconds until the moon is full again
+-- Calculate the seconds until the moon is full again
 -- returns 0 if the moon is already full
 -- @param phasePercentage percentage already pased in the current phase
 -- @return number of seconds until the moon is full again
@@ -227,7 +224,7 @@ local function GetSecondsUntilFullMoon(phasePercentage)
 	return secondsUntilFull
 end
 
---- Calculate the lore moon
+-- Calculate the lore moon
 -- @param timestamp UNIX to be calculated from
 -- @return moon object { percentageOfPhaseDone, currentPhaseName, isWaxing,
 --      percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
@@ -263,7 +260,7 @@ local function CalculateMoon(timestamp)
 	}
 end
 
---- Update the time with the current timestamp and store it in the time variable
+-- Update the time with the current timestamp and store it in the time variable
 -- If neccessary, update the date and store in also
 local function Update()
 	local systemTime = GetTimeStamp()
@@ -274,17 +271,17 @@ local function Update()
 	end
 end
 
---- Update the moon with the current timestamp and store it in the moon variable
+-- Update the moon with the current timestamp and store it in the moon variable
 local function MoonUpdate()
 	local systemTime = GetTimeStamp()
 	moon = CalculateMoon(systemTime)
 end
 
--------------------
+-- -----------------
 -- Commands
--------------------
+-- -----------------
 
---- Event to update the time and date and its listeners
+-- Event to update the time and date and its listeners
 local function PrintHelp()
 	d("Welcome to the |cFFD700LibClock|r - LibClockTST by |c5175ea@Tyx|r [EU] help menu\n"
 		.. "To show the current time, write:\n"
@@ -301,7 +298,7 @@ local function PrintHelp()
 		.. "\t\\LibClockTST moon [timestamp]\n")
 end
 
---- Handel a given command
+-- Handel a given command
 -- If time is given, the time table will be printed.
 -- If date is given, the date table will be printed.
 -- If moon is given, the moon table will be printed.
@@ -334,7 +331,7 @@ local function CommandHandler(options)
 	end
 end
 
---- Register the slash command 'LibClockTST'
+-- Register the slash command 'LibClockTST'
 local function RegisterCommands()
 	SLASH_COMMANDS["/LibClockTST"] = function (extra)
 		local options = {}
@@ -348,16 +345,16 @@ local function RegisterCommands()
 	end
 end
 
--------------------
+-- -----------------
 -- Initialize
--------------------
+-- -----------------
 
 local dateListener = {}
 local moonListener = {}
 local timeListener = {}
 local listener = {}
 
---- Event to update the time and date and its listeners
+-- Event to update the time and date and its listeners
 local function OnUpdate()
 	Update()
 	assert(time, "Time object is empty")
@@ -376,7 +373,7 @@ local function OnUpdate()
     end
 end
 
---- Event to update the moon and its listeners
+-- Event to update the moon and its listeners
 local function OnMoonUpdate()
 	MoonUpdate()
 	assert(moon, "Moon object is empty")
@@ -385,7 +382,7 @@ local function OnMoonUpdate()
 	end
 end
 
---- Event to be called on Load
+-- Event to be called on Load
 local function OnLoad(_, addonName)
 	if addonName ~= ID then return end
 	-- wait for the first loaded event
@@ -395,10 +392,16 @@ end
 em:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
 
 
--------------------
+-- -----------------
 -- Public
--------------------
+-- -----------------
 
+--- Constructor
+-- Create a object to use custom delays between updates.
+-- Warning: Could lead to performance issues if you overdue this!
+-- @param[opt] updateDelay delays between two updates in ms to calculate the time and date
+-- @param[opt] moonUpdateDelay delays between two updates in ms to calculate the moon
+-- @return LibClockTST object
 function LibClockTST:New(updateDelay, moonUpdateDelay)
     updateDelay = tonumber(updateDelay)
     moonUpdateDelay = tonumber(moonUpdateDelay)
