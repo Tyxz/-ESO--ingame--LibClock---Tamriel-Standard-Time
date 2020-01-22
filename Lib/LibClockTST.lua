@@ -67,77 +67,91 @@ local eventHandle = table.concat({MAJOR, MINOR}, "r")
 local em = EVENT_MANAGER
 
 --- Constants with all information about the time, date and moon
-LibClockTST.CONSTANTS = {
-	time = {
-		lengthOfDay = 20955, -- length of one day in s (default 5.75h right now)
-		lengthOfNight = 7200, -- length of only the night in s (2h)
-		lengthOfHour = 873.125, -- length of an in-game hour in s
-		startTime = 1398033648.5, -- exact unix time at ingame noon as unix timestamp 1398044126 minus offset from midnight 10477.5 (lengthOfDay/2) in s
-	},
-	date = {
-		startTime = 1394617983.724, -- Eso Release  04.04.2014  UNIX: 1396569600 minus calculated offset to midnight 2801.2760416667 minus offset of days to 1.1.582, 1948815 ((31 + 28 + 31 + 3) * const.time.lengthOfDay)
-		startWeekDay = 2, -- Start day was Friday (5) but start time of calculation is 93 days before. Therefore, the weekday is (4 - 93)%7
-		startYear = 582, -- offset in years, because the game starts in 2E 582
-		startEra = 2, -- era the world is in 
-		monthLength = { -- different length of month within the year in days
-			[1] = 31,
-			[2] = 28,
-			[3] = 31,
-			[4] = 30,
-			[5] = 31,
-			[6] = 30,
-			[7] = 31,
-			[8] = 31,
-			[9] = 30,
-			[10] = 31,
-			[11] = 30,
-			[12] = 31,
-		},
-		yearLength = 365, -- length of the in-game year in days
-	},
-	moon = {
+-- @field time information to calculate the Tamriel Standard Time
+-- @field date information to calculate the Tamriel Standard Time date
+-- @field moon information to calculate the moon position
+-- @table CONSTANTS
+LibClockTST.CONSTANTS = {}
+
+--- Constant information to calculate the Tamriel Standard Time
+LibClockTST.CONSTANTS.time = {
+    lengthOfDay = 20955, -- length of one day in s (default 5.75h right now)
+    lengthOfNight = 7200, -- length of only the night in s (2h)
+    lengthOfHour = 873.125, -- length of an in-game hour in s
+    startTime = 1398033648.5, -- exact unix time at ingame noon as unix timestamp 1398044126 minus offset from midnight 10477.5 (lengthOfDay/2) in s
+}
+
+--- Constant information to calculate the Tamriel Standard Time date
+LibClockTST.CONSTANTS.date = {
+    startTime = 1394617983.724, -- Eso Release  04.04.2014  UNIX: 1396569600 minus calculated offset to midnight 2801.2760416667 minus offset of days to 1.1.582, 1948815 ((31 + 28 + 31 + 3) * const.time.lengthOfDay)
+    startWeekDay = 2, -- Start day was Friday (5) but start time of calculation is 93 days before. Therefore, the weekday is (4 - 93)%7
+    startYear = 582, -- offset in years, because the game starts in 2E 582
+    startEra = 2, -- era the world is in 
+    yearLength = 365, -- length of the in-game year in days
+}
+
+--- Different length of month within the year in days
+LibClockTST.CONSTANTS.date.monthLength = { 
+    [1] = 31, -- Januar
+    [2] = 28, -- Februar
+    [3] = 31, -- March
+    [4] = 30, -- April
+    [5] = 31, -- May
+    [6] = 30, -- June
+    [7] = 31, -- July
+    [8] = 31, -- August
+    [9] = 30, -- September
+    [10] = 31, -- October
+    [11] = 30, -- November
+    [12] = 31, -- December
+}
+
+--- Constant information to calculate the moon position
+LibClockTST.CONSTANTS.moon = {
 		startTime = 1436153095, -- 1435838770 from https://esoclock.uesp.net/ + half phase = 1436153095 - phaseOffsetToEnd * phaseLengthInSeconds = 1436112233
 		phaseLength = 30, -- ingame days
 		phaseLengthInSeconds = 628650, -- in s, phaseLength * dayLength
 		singlePhaseLength = 3.75, -- in ingame days
 		singlePhaseLengthInSeconds = 78581.25, -- in s, singlePhaseLength * dayLength
-		phasesPercentage = { -- https://esoclock.uesp.net/
-			[1] = {
-				name = "new",
-				endPercentage = 0.06,
-			},
-			[2] = {
-				name = "waxingCrescent",
-				endPercentage = 0.185,
-			},
-			[3] = {
-				name = "firstQuarter",
-				endPercentage = 0.31,
-			},
-			[4] = {
-				name = "waxingGibbonus",
-				endPercentage = 0.435,
-			},
-			[5] = {
-				name = "full",
-				endPercentage = 0.56,
-			},
-			[6] = {
-				name = "waningGibbonus",
-				endPercentage = 0.685,
-			},
-			[7] = {
-				name = "thirdQuarter",
-				endPercentage = 0.81,
-			},
-			[8] = {
-				name = "waningCrescent",
-				endPercentage = 0.935,
-			},
-		},
 		phasesPercentageBetweenPhases = 0.125, -- length in percentage of whole phase of each single phase
-	},
+} 
+
+--- Percentage until end of phase  from https://esoclock.uesp.net/
+LibClockTST.CONSTANTS.moon.phasesPercentage = {
+    [1] = {
+        name = "new",
+        endPercentage = 0.06,
+    }, -- new moon phase
+    [2] = {
+        name = "waxingCrescent",
+        endPercentage = 0.185,
+    }, -- waxing crescent moon phase
+    [3] = {
+        name = "firstQuarter",
+        endPercentage = 0.31,
+    }, -- first quarter moon phase
+    [4] = {
+        name = "waxingGibbonus",
+        endPercentage = 0.435,
+    }, -- waxing gibbonus moon phase
+    [5] = {
+        name = "full",
+        endPercentage = 0.56,
+    }, -- full moon phase
+    [6] = {
+        name = "waningGibbonus",
+        endPercentage = 0.685,
+    }, -- waning gibbonus moon phase
+    [7] = {
+        name = "thirdQuarter",
+        endPercentage = 0.81,
+    }, -- third quarter moon phase
+    [8] = {
+        name = "waningCrescent",
+        endPercentage = 0.935,
+    }, -- waning crescent moon phase
 }
+
 local const = Protect(LibClockTST.CONSTANTS)
 
 LibClockTST.CONSTANTS = const

@@ -31,7 +31,6 @@
 <ul>
 <li><a href="#Functions">Functions</a></li>
 <li><a href="#Tables">Tables</a></li>
-<li><a href="#Local_Functions">Local Functions</a></li>
 </ul>
 
 
@@ -126,13 +125,25 @@ License:    GPL-<span class="number">3.0</span>
 	<td class="name" nowrap><a href="#CONSTANTS">CONSTANTS</a></td>
 	<td class="summary">Constants with all information about the time, date and moon</td>
 	</tr>
-</table>
-<h2><a href="#Local_Functions">Local Functions</a></h2>
-<table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Protect">Protect (tbl)</a></td>
-	<td class="summary">Makes a table read-only
- Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html</td>
+	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.time">LibClockTST.CONSTANTS.time</a></td>
+	<td class="summary">Constant information to calculate the Tamriel Standard Time</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.date">LibClockTST.CONSTANTS.date</a></td>
+	<td class="summary">Constant information to calculate the Tamriel Standard Time date</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.date.monthLength">LibClockTST.CONSTANTS.date.monthLength</a></td>
+	<td class="summary">Different length of month within the year in days</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.moon">LibClockTST.CONSTANTS.moon</a></td>
+	<td class="summary">Constant information to calculate the moon position</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.moon.phasesPercentage">LibClockTST.CONSTANTS.moon.phasesPercentage</a></td>
+	<td class="summary">Percentage until end of phase  from https://esoclock.uesp.net/</td>
 	</tr>
 </table>
 
@@ -476,6 +487,32 @@ License:    GPL-<span class="number">3.0</span>
     <h3>Fields:</h3>
     <ul>
         <li><span class="parameter">time</span>
+         information to calculate the Tamriel Standard Time
+        </li>
+        <li><span class="parameter">date</span>
+         information to calculate the Tamriel Standard Time date
+        </li>
+        <li><span class="parameter">moon</span>
+         information to calculate the moon position
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "LibClockTST.CONSTANTS.time"></a>
+    <strong>LibClockTST.CONSTANTS.time</strong>
+    </dt>
+    <dd>
+    Constant information to calculate the Tamriel Standard Time
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">lengthOfDay</span>
         length of one day in s (default 5.75h right now)
         </li>
         <li><span class="parameter">lengthOfNight</span>
@@ -494,31 +531,148 @@ License:    GPL-<span class="number">3.0</span>
 
 
 </dd>
-</dl>
-    <h2 class="section-header "><a name="Local_Functions"></a>Local Functions</h2>
-
-    <dl class="function">
     <dt>
-    <a name = "Protect"></a>
-    <strong>Protect (tbl)</strong>
+    <a name = "LibClockTST.CONSTANTS.date"></a>
+    <strong>LibClockTST.CONSTANTS.date</strong>
     </dt>
     <dd>
-    Makes a table read-only
- Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html
+    Constant information to calculate the Tamriel Standard Time date
 
 
-    <h3>Parameters:</h3>
+    <h3>Fields:</h3>
     <ul>
-        <li><span class="parameter">tbl</span>
-         any table to be made read-only
+        <li><span class="parameter">startTime</span>
+            <span class="types"><span class="type">Eso Release  04.04.2014  UNIX</span></span>
+         1396569600 minus calculated offset to midnight 2801.2760416667 minus offset of days to 1.1.582, 1948815 ((31 + 28 + 31 + 3) * const.time.lengthOfDay)
+        </li>
+        <li><span class="parameter">startWeekDay</span>
+        Start day was Friday (5) but start time of calculation is 93 days before. Therefore, the weekday is (4 &ndash; 93)%7
+        </li>
+        <li><span class="parameter">startYear</span>
+        offset in years, because the game starts in 2E 582
+        </li>
+        <li><span class="parameter">startEra</span>
+        era the world is in
+        </li>
+        <li><span class="parameter">yearLength</span>
+        length of the in-game year in days
         </li>
     </ul>
 
-    <h3>Returns:</h3>
-    <ol>
 
-        a read-only table
-    </ol>
+
+
+
+</dd>
+    <dt>
+    <a name = "LibClockTST.CONSTANTS.date.monthLength"></a>
+    <strong>LibClockTST.CONSTANTS.date.monthLength</strong>
+    </dt>
+    <dd>
+    Different length of month within the year in days
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">[1]</span>
+        Januar
+        </li>
+        <li><span class="parameter">[2]</span>
+        Februar
+        </li>
+        <li><span class="parameter">[3]</span>
+        March
+        </li>
+        <li><span class="parameter">[4]</span>
+        April
+        </li>
+        <li><span class="parameter">[5]</span>
+        May
+        </li>
+        <li><span class="parameter">[6]</span>
+        June
+        </li>
+        <li><span class="parameter">[7]</span>
+        July
+        </li>
+        <li><span class="parameter">[8]</span>
+        August
+        </li>
+        <li><span class="parameter">[9]</span>
+        September
+        </li>
+        <li><span class="parameter">[10]</span>
+        October
+        </li>
+        <li><span class="parameter">[11]</span>
+        November
+        </li>
+        <li><span class="parameter">[12]</span>
+        December
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "LibClockTST.CONSTANTS.moon"></a>
+    <strong>LibClockTST.CONSTANTS.moon</strong>
+    </dt>
+    <dd>
+    Constant information to calculate the moon position
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">startTime</span>
+            <span class="types"><span class="type">1435838770 from https</span></span>
+        //esoclock.uesp.net/ + half phase = 1436153095 &ndash; phaseOffsetToEnd * phaseLengthInSeconds = 1436112233
+        </li>
+        <li><span class="parameter">phaseLength</span>
+        ingame days
+        </li>
+        <li><span class="parameter">phaseLengthInSeconds</span>
+        in s, phaseLength * dayLength
+        </li>
+        <li><span class="parameter">singlePhaseLength</span>
+        in ingame days
+        </li>
+        <li><span class="parameter">singlePhaseLengthInSeconds</span>
+        in s, singlePhaseLength * dayLength
+        </li>
+        <li><span class="parameter">phasesPercentageBetweenPhases</span>
+        length in percentage of whole phase of each single phase
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "LibClockTST.CONSTANTS.moon.phasesPercentage"></a>
+    <strong>LibClockTST.CONSTANTS.moon.phasesPercentage</strong>
+    </dt>
+    <dd>
+    Percentage until end of phase  from https://esoclock.uesp.net/
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">[1]</span>
+
+
+        </li>
+        <li><span class="parameter">endPercentage</span>
+
+
+        </li>
+    </ul>
+
 
 
 
@@ -531,7 +685,7 @@ License:    GPL-<span class="number">3.0</span>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-01-22 01:29:53 </i>
+<i style="float:right;">Last updated 2020-01-22 01:53:49 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
