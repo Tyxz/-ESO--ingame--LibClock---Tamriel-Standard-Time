@@ -1,8 +1,8 @@
 --- Requires busted https://github.com/Olivine-Labs/busted
 -- run luarocks install busted
 
-require("test.ZOMock")
-require("lib.LibClockTST")
+require("Test.ZOMock")
+require("Lib.LibClockTST")
 
 describe("ZOMock", function()
 
