@@ -1,7 +1,7 @@
 project = 'LibClock - Tamriel Standard Time'
 format = 'discount'
 file = 'Lib/LibClockTST.lua'
-dir = 'doc'
+dir = 'docs'
 all = true
 readme = "README.md"
 title = "LibClockTST Documentation"
