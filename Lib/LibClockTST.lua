@@ -1,4 +1,18 @@
-local TST = {
+--[[----------------------------------------
+    Location:   Lib/LibClockTST.lua
+    Author:     Arne Rantzen (Tyx)
+    Created:    2020-01-20
+    Updated:    2020-01-22
+    License:    GPL-3.0
+----------------------------------------]]--
+------------
+-- LibClock - Tamriel Standard Time
+-- Public functions to get information about the in-game time, date and moon
+-- You can call them directly or subscribe to updates. 
+-- Each function also gives the option to get information about a specific timestamp.
+----
+
+LibClockTST = {
 	updateDelay = 200,
 	moonUpdateDelay = 36000000,
 }
@@ -8,10 +22,10 @@ local TST = {
 -------------------
 
 --- Makes a table read-only
---- Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html
---- @param table
---- @return constant table
-function TST:Protect(tbl)
+-- Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html
+-- @param tbl any table to be made read-only
+-- @return a read-only table
+local function Protect(tbl)
 	return setmetatable({}, {
 		__index = tbl,
 		__newindex = function(t, key, value)
@@ -21,14 +35,23 @@ function TST:Protect(tbl)
 	})
 end
 
+--- Check if string is nil or empty
+-- @param obj string to be checked
+-- @return bool if it is not nil or empty
 local function IsNotNilOrEmpty(obj) 
     return obj ~= nil and string.match(tostring(obj), "^%s*$") == nil
 end
 
+--- Check if object is a string
+-- @param obj string to be checked
+-- @return bool if it is a string
 local function IsString(str) 
     return type(str) == "string"
 end
 
+--- Check if input is a timestamp
+-- @param timestamp object to be checked
+-- @return bool if it matches the condition
 local function IsTimestamp(timestamp)
     timestamp = math.floor(tonumber(timestamp))
     return string.match(tostring(timestamp), "^%d%d%d%d%d%d%d%d%d%d$") ~= nil
@@ -43,7 +66,8 @@ local eventHandle = table.concat({MAJOR, MINOR}, "r")
 
 local em = EVENT_MANAGER
 
-local const = {
+--- Constants with all information about the time, date and moon
+LibClockTST.CONSTANTS = {
 	time = {
 		lengthOfDay = 20955, -- length of one day in s (default 5.75h right now)
 		lengthOfNight = 7200, -- length of only the night in s (2h)
@@ -117,10 +141,9 @@ local const = {
 		phasesPercentageBetweenPhases = 0.125,
 	},
 }
+local const = Protect(LibClockTST.CONSTANTS)
 
-TST.CONSTANTS = TST:Protect(const)
-
-LibClockTST = TST
+LibClockTST.CONSTANTS = const
 
 -------------------
 -- Calculation
@@ -135,18 +158,18 @@ local moon
 --- Get the lore time
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 -- otherwise it will be the current time.
--- @param timestamp [optional]
--- @return date object {era, year, month, day, weekDay}
-local function CalculateTST(timestamp)
+-- @param[opt] timestamp UNIX timestamp in s
+-- @return {hour, minute, second} table
+local function CalculateLibClockTST(timestamp)
 	local timeSinceStart = timestamp - const.time.startTime
 	local secondsSinceMidnight = timeSinceStart % const.time.lengthOfDay
-	local tst = 24 * secondsSinceMidnight / const.time.lengthOfDay
+	local LibClockTST = 24 * secondsSinceMidnight / const.time.lengthOfDay
 
-	local h = math.floor(tst)
-	tst = (tst - h) * 60
-	local m = math.floor(tst)
-	tst = (tst - m) * 60
-	local s = math.floor(tst)
+	local h = math.floor(LibClockTST)
+	LibClockTST = (LibClockTST - h) * 60
+	local m = math.floor(LibClockTST)
+	LibClockTST = (LibClockTST - m) * 60
+	local s = math.floor(LibClockTST)
 
 	if h == 0 and h ~= lastCalculatedHour then
 		needToUpdateDate = true
@@ -160,9 +183,9 @@ end
 --- Get the lore date
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 -- otherwise it will be calculated from the current time.
--- @param timestamp [optional]
--- @return date object {era, year, month, day, weekDay}
-local function CalculateTSTDate(timestamp)
+-- @param[opt] timestamp UNIX timestamp in s
+-- @return {era, year, month, day, weekDay} table
+local function CalculateLibClockTSTDate(timestamp)
 	local timeSinceStart = timestamp - const.date.startTime
 	local daysPast = math.floor(timeSinceStart / const.time.lengthOfDay)
 	local w = (daysPast + const.date.startWeekDay) % 7 + 1
@@ -184,7 +207,7 @@ end
 
 --- Get the name of the current moon phase
 -- @param phasePercentage percentage already pased in the current phase
--- @return string of current moon phase
+-- @return current moon phase string
 local function GetCurrentPhaseName(phasePercentage)
 	for _, phase in ipairs(const.moon.phasesPercentage) do
 		if phasePercentage < phase.endPercentage then return phase.name end
@@ -244,10 +267,10 @@ end
 -- If neccessary, update the date and store in also
 local function Update()
 	local systemTime = GetTimeStamp()
-	time = CalculateTST(systemTime)
+	time = CalculateLibClockTST(systemTime)
 	needToUpdateDate = true -- TODO: Remove
 	if needToUpdateDate then
-		date = CalculateTSTDate(systemTime)
+		date = CalculateLibClockTSTDate(systemTime)
 	end
 end
 
@@ -263,19 +286,19 @@ end
 
 --- Event to update the time and date and its listeners
 local function PrintHelp()
-	d("Welcome to the |cFFD700LibClock|r - TST by |c5175ea@Tyx|r [EU] help menu\n"
+	d("Welcome to the |cFFD700LibClock|r - LibClockTST by |c5175ea@Tyx|r [EU] help menu\n"
 		.. "To show the current time, write:\n"
-		.. "\t\\tst time\n"
+		.. "\t\\LibClockTST time\n"
 		.. "To show a specific time at a given UNIX timestamp in seconds, write:\n"
-		.. "\t\\tst time [timestamp]\n"
+		.. "\t\\LibClockTST time [timestamp]\n"
 		.. "To show the current date, write:\n"
-		.. "\t\\tst date\n"
+		.. "\t\\LibClockTST date\n"
 		.. "To show a specific date at a given UNIX timestamp in seconds, write:\n"
-		.. "\t\\tst date [timestamp]\n"
+		.. "\t\\LibClockTST date [timestamp]\n"
 		.. "To show the current moon phase, write:\n"
-		.. "\t\\tst moon\n"
+		.. "\t\\LibClockTST moon\n"
 		.. "To show a specific moon phase at a given UNIX timestamp in seconds, write:\n"
-		.. "\t\\tst moon [timestamp]\n")
+		.. "\t\\LibClockTST moon [timestamp]\n")
 end
 
 --- Handel a given command
@@ -299,9 +322,9 @@ local function CommandHandler(options)
 			end
 		end
 		if options[1] == "time" then
-			d(CalculateTST(timestamp))
+			d(CalculateLibClockTST(timestamp))
 		elseif options[1] == "date" then
-			d(CalculateTSTDate(timestamp))
+			d(CalculateLibClockTSTDate(timestamp))
 		elseif options[1] == "moon" then
 			d(CalculateMoon(timestamp))
 		else
@@ -311,9 +334,9 @@ local function CommandHandler(options)
 	end
 end
 
---- Register the slash command 'tst'
+--- Register the slash command 'LibClockTST'
 local function RegisterCommands()
-	SLASH_COMMANDS["/tst"] = function (extra)
+	SLASH_COMMANDS["/LibClockTST"] = function (extra)
 		local options = {}
 		local searchResult = { string.match(extra,"^(%S*)%s*(.-)$") }
 		for i,v in pairs(searchResult) do
@@ -376,7 +399,7 @@ em:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
 -- Public
 -------------------
 
-function TST:New(updateDelay, moonUpdateDelay)
+function LibClockTST:New(updateDelay, moonUpdateDelay)
     updateDelay = tonumber(updateDelay)
     moonUpdateDelay = tonumber(moonUpdateDelay)
 	self.updateDelay = updateDelay or self.updateDelay
@@ -387,14 +410,14 @@ end
 --- Get the lore time
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 -- otherwise it will be the current time.
--- @param timestamp [optional]
+-- @param[opt] timestamp UNIX timestamp in s
 -- @return date object {era, year, month, day, weekDay}
-function TST:GetTime(timestamp)
+function LibClockTST:GetTime(timestamp)
 	if timestamp then
         assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
         timestamp = tonumber(timestamp)
 		local tNeedToUpdateDate = needToUpdateDate
-		local t = CalculateTST(timestamp)
+		local t = CalculateLibClockTST(timestamp)
 		needToUpdateDate = tNeedToUpdateDate
 		return t
 	else
@@ -406,14 +429,14 @@ end
 --- Get the lore date
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 -- otherwise it will be calculated from the current time.
--- @param timestamp [optional]
+-- @param[opt] timestamp UNIX timestamp in s
 -- @return date object {era, year, month, day, weekDay}
-function TST:GetDate(timestamp)
+function LibClockTST:GetDate(timestamp)
 	if timestamp then
         assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
         timestamp = tonumber(timestamp)
 		local tNeedToUpdateDate = needToUpdateDate
-		local d = CalculateTSTDate(timestamp)
+		local d = CalculateLibClockTSTDate(timestamp)
 		needToUpdateDate = tNeedToUpdateDate
 		return d
 	else
@@ -425,11 +448,11 @@ end
 --- Get the lore moon
 -- If a parameter is given, the lore moon of the UNIX timestamp will be returned,
 -- otherwise it will be calculated from the current time.
--- @param timestamp [optional]
+-- @param[opt] timestamp UNIX timestamp in s
 -- @return moon object { phasePercentage, currentPhaseName, isWaxing,
 --      percentageOfNextPhase, secondsUntilNextPhase, daysUntilNextPhase,
 --      secondsUntilFullMoon, daysUntilFullMoon }
-function TST:GetMoon(timestamp)
+function LibClockTST:GetMoon(timestamp)
 	if timestamp then
         assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
         timestamp = tonumber(timestamp)
@@ -443,7 +466,7 @@ end
 --- Register an addon to subscribe to date and time updates.
 -- @param addonId Id of the addon to be registered
 -- @param func function with two parameters for time and date to be called
-function TST:Register(addonId, func)
+function LibClockTST:Register(addonId, func)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 	assert(func, "Please provide a function: func(time, date) to be called every second for a time update.")
 	assert(not listener[addonId], addonId .. " already subscribes.")
@@ -454,7 +477,7 @@ end
 --- Cancel a subscription for the date and time updates.
 -- Will also stop background calculations if no addon is subscribing anymore.
 -- @param addonId Id of the addon previous registered
-function TST:CancelSubscription(addonId)
+function LibClockTST:CancelSubscription(addonId)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
 	assert(listener[addonId], "Subscription could not be found.")
 	listener[addonId] = nil
@@ -466,8 +489,8 @@ end
 --- Register an addon to subscribe to time updates.
 -- @param addonId Id of the addon to be registered
 -- @param func function with a parameter for time to be called
--- @see TST:Register
-function TST:RegisterForTime(addonId, func)
+-- @see LibClockTST:Register
+function LibClockTST:RegisterForTime(addonId, func)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 	assert(func, "Please provide a function: func(time) to be called every second for a time update.")
 	assert(not timeListener[addonId], addonId .. " already subscribes.")
@@ -477,8 +500,8 @@ end
 
 --- Cancel a subscription for the time updates.
 -- @param addonId Id of the addon previous registered
--- @see TST:CancelSubscription
-function TST:CancelSubscriptionForTime(addonId)
+-- @see LibClockTST:CancelSubscription
+function LibClockTST:CancelSubscriptionForTime(addonId)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
 	assert(timeListener[addonId], "Subscription could not be found.")
 	timeListener[addonId] = nil
@@ -490,8 +513,8 @@ end
 --- Register an addon to subscribe to date updates.
 -- @param addonId Id of the addon to be registered
 -- @param func function with a parameter for date to be called
--- @see TST:Register
-function TST:RegisterForDate(addonId, func)
+-- @see LibClockTST:Register
+function LibClockTST:RegisterForDate(addonId, func)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 	assert(func, "Please provide a function: func(date) to be called every second for a time update.")
 	assert(not dateListener[addonId], addonId .. " already subscribes.")
@@ -501,8 +524,8 @@ end
 
 --- Cancel a subscription for the date updates.
 -- @param addonId Id of the addon previous registered
--- @see TST:CancelSubscription
-function TST:CancelSubscriptionForDate(addonId)
+-- @see LibClockTST:CancelSubscription
+function LibClockTST:CancelSubscriptionForDate(addonId)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
 	assert(dateListener[addonId], "Subscription could not be found.")
 	dateListener[addonId] = nil
@@ -514,8 +537,8 @@ end
 --- Register an addon to subscribe to moon updates.
 -- @param addonId Id of the addon to be registered
 -- @param func function with a parameter for moon to be called
--- @see TST:Register
-function TST:RegisterForMoon(addonId, func)
+-- @see LibClockTST:Register
+function LibClockTST:RegisterForMoon(addonId, func)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 	assert(func, "Please provide a function: func(moon) to be called every second for a time update.")
 	assert(not moonListener[addonId], addonId .. " already subscribes.")
@@ -529,8 +552,8 @@ end
 
 --- Cancel a subscription for the moon updates.
 -- @param addonId Id of the addon previous registered
--- @see TST:CancelSubscription
-function TST:CancelSubscriptionForMoon(addonId)
+-- @see LibClockTST:CancelSubscription
+function LibClockTST:CancelSubscriptionForMoon(addonId)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
 	assert(moonListener[addonId], "Subscription could not be found.")
 	moonListener[addonId] = nil

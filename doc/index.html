@@ -1,0 +1,966 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>LibClockTST Documentation</title>
+    <link rel="stylesheet" href="ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>LibClock - Tamriel Standard Time</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Tables">Tables</a></li>
+<li><a href="#Local_Functions">Local Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>LibClockTST</strong></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>LibClockTST</code></h1>
+<p>Location:   Lib/LibClockTST.lua
+<pre>
+Author:     Arne Rantzen (Tyx)
+Created:    <span class="number">2020</span>&ndash;<span class="number">01</span>&ndash;<span class="number">20</span>
+Updated:    <span class="number">2020</span>&ndash;<span class="number">01</span>&ndash;<span class="number">22</span>
+License:    GPL-<span class="number">3.0</span>
+</pre>
+ LibClock &ndash; Tamriel Standard Time
+ Public functions to get information about the in-game time, date and moon
+ You can call them directly or subscribe to updates.</p>
+<p> Each function also gives the option to get information about a specific timestamp.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#New">New (updateDelay, moonUpdateDelay)</a></td>
+	<td class="summary">Public</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetTime">GetTime ([timestamp])</a></td>
+	<td class="summary">Get the lore time
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be the current time.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetDate">GetDate ([timestamp])</a></td>
+	<td class="summary">Get the lore date
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be calculated from the current time.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetMoon">GetMoon ([timestamp])</a></td>
+	<td class="summary">Get the lore moon
+ If a parameter is given, the lore moon of the UNIX timestamp will be returned,
+ otherwise it will be calculated from the current time.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Register">Register (addonId, func)</a></td>
+	<td class="summary">Register an addon to subscribe to date and time updates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CancelSubscription">CancelSubscription (addonId)</a></td>
+	<td class="summary">Cancel a subscription for the date and time updates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RegisterForTime">RegisterForTime (addonId, func)</a></td>
+	<td class="summary">Register an addon to subscribe to time updates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CancelSubscriptionForTime">CancelSubscriptionForTime (addonId)</a></td>
+	<td class="summary">Cancel a subscription for the time updates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RegisterForDate">RegisterForDate (addonId, func)</a></td>
+	<td class="summary">Register an addon to subscribe to date updates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CancelSubscriptionForDate">CancelSubscriptionForDate (addonId)</a></td>
+	<td class="summary">Cancel a subscription for the date updates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RegisterForMoon">RegisterForMoon (addonId, func)</a></td>
+	<td class="summary">Register an addon to subscribe to moon updates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CancelSubscriptionForMoon">CancelSubscriptionForMoon (addonId)</a></td>
+	<td class="summary">Cancel a subscription for the moon updates.</td>
+	</tr>
+</table>
+<h2><a href="#Tables">Tables</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#CONSTANTS">CONSTANTS</a></td>
+	<td class="summary">Constants with all information about the time, date and moon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#dateListener">dateListener</a></td>
+	<td class="summary">Initialize</td>
+	</tr>
+</table>
+<h2><a href="#Local_Functions">Local Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Protect">Protect (tbl)</a></td>
+	<td class="summary">Makes a table read-only
+ Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#IsNotNilOrEmpty">IsNotNilOrEmpty (obj)</a></td>
+	<td class="summary">Check if string is nil or empty</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#IsString">IsString (obj)</a></td>
+	<td class="summary">Check if object is a string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#IsTimestamp">IsTimestamp (timestamp)</a></td>
+	<td class="summary">Check if input is a timestamp</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CalculateLibClockTST">CalculateLibClockTST ([timestamp])</a></td>
+	<td class="summary">Get the lore time
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be the current time.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CalculateLibClockTSTDate">CalculateLibClockTSTDate ([timestamp])</a></td>
+	<td class="summary">Get the lore date
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be calculated from the current time.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetCurrentPhaseName">GetCurrentPhaseName (phasePercentage)</a></td>
+	<td class="summary">Get the name of the current moon phase</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetSecondsUntilFullMoon">GetSecondsUntilFullMoon (phasePercentage)</a></td>
+	<td class="summary">Calculate the seconds until the moon is full again
+ returns 0 if the moon is already full</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CalculateMoon">CalculateMoon (timestamp)</a></td>
+	<td class="summary">Calculate the lore moon</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Update">Update ()</a></td>
+	<td class="summary">Update the time with the current timestamp and store it in the time variable
+ If neccessary, update the date and store in also</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MoonUpdate">MoonUpdate ()</a></td>
+	<td class="summary">Update the moon with the current timestamp and store it in the moon variable</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PrintHelp">PrintHelp ()</a></td>
+	<td class="summary">Event to update the time and date and its listeners</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CommandHandler">CommandHandler (options)</a></td>
+	<td class="summary">Handel a given command
+ If time is given, the time table will be printed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RegisterCommands">RegisterCommands ()</a></td>
+	<td class="summary">Register the slash command &lsquo;LibClockTST&rsquo;</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#OnUpdate">OnUpdate ()</a></td>
+	<td class="summary">Event to update the time and date and its listeners</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#OnMoonUpdate">OnMoonUpdate ()</a></td>
+	<td class="summary">Event to update the moon and its listeners</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#OnLoad">OnLoad (_, addonName)</a></td>
+	<td class="summary">Event to be called on Load</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "New"></a>
+    <strong>New (updateDelay, moonUpdateDelay)</strong>
+    </dt>
+    <dd>
+    Public
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">updateDelay</span>
+
+
+        </li>
+        <li><span class="parameter">moonUpdateDelay</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetTime"></a>
+    <strong>GetTime ([timestamp])</strong>
+    </dt>
+    <dd>
+    Get the lore time
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be the current time.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX timestamp in s
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        date object {era, year, month, day, weekDay}
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetDate"></a>
+    <strong>GetDate ([timestamp])</strong>
+    </dt>
+    <dd>
+    Get the lore date
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be calculated from the current time.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX timestamp in s
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        date object {era, year, month, day, weekDay}
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetMoon"></a>
+    <strong>GetMoon ([timestamp])</strong>
+    </dt>
+    <dd>
+    Get the lore moon
+ If a parameter is given, the lore moon of the UNIX timestamp will be returned,
+ otherwise it will be calculated from the current time.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX timestamp in s
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <p> moon object { phasePercentage, currentPhaseName, isWaxing,</p>
+
+<pre><code>  percentageOfNextPhase, secondsUntilNextPhase, daysUntilNextPhase,
+  secondsUntilFullMoon, daysUntilFullMoon }
+</code></pre>
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Register"></a>
+    <strong>Register (addonId, func)</strong>
+    </dt>
+    <dd>
+    Register an addon to subscribe to date and time updates.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">addonId</span>
+         Id of the addon to be registered
+        </li>
+        <li><span class="parameter">func</span>
+         function with two parameters for time and date to be called
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CancelSubscription"></a>
+    <strong>CancelSubscription (addonId)</strong>
+    </dt>
+    <dd>
+    Cancel a subscription for the date and time updates.
+ Will also stop background calculations if no addon is subscribing anymore.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">addonId</span>
+         Id of the addon previous registered
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RegisterForTime"></a>
+    <strong>RegisterForTime (addonId, func)</strong>
+    </dt>
+    <dd>
+    Register an addon to subscribe to time updates.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">addonId</span>
+         Id of the addon to be registered
+        </li>
+        <li><span class="parameter">func</span>
+         function with a parameter for time to be called
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#Register">LibClockTST:Register</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "CancelSubscriptionForTime"></a>
+    <strong>CancelSubscriptionForTime (addonId)</strong>
+    </dt>
+    <dd>
+    Cancel a subscription for the time updates.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">addonId</span>
+         Id of the addon previous registered
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#CancelSubscription">LibClockTST:CancelSubscription</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "RegisterForDate"></a>
+    <strong>RegisterForDate (addonId, func)</strong>
+    </dt>
+    <dd>
+    Register an addon to subscribe to date updates.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">addonId</span>
+         Id of the addon to be registered
+        </li>
+        <li><span class="parameter">func</span>
+         function with a parameter for date to be called
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#Register">LibClockTST:Register</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "CancelSubscriptionForDate"></a>
+    <strong>CancelSubscriptionForDate (addonId)</strong>
+    </dt>
+    <dd>
+    Cancel a subscription for the date updates.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">addonId</span>
+         Id of the addon previous registered
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#CancelSubscription">LibClockTST:CancelSubscription</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "RegisterForMoon"></a>
+    <strong>RegisterForMoon (addonId, func)</strong>
+    </dt>
+    <dd>
+    Register an addon to subscribe to moon updates.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">addonId</span>
+         Id of the addon to be registered
+        </li>
+        <li><span class="parameter">func</span>
+         function with a parameter for moon to be called
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#Register">LibClockTST:Register</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "CancelSubscriptionForMoon"></a>
+    <strong>CancelSubscriptionForMoon (addonId)</strong>
+    </dt>
+    <dd>
+    Cancel a subscription for the moon updates.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">addonId</span>
+         Id of the addon previous registered
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#CancelSubscription">LibClockTST:CancelSubscription</a>
+    </ul>
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "CONSTANTS"></a>
+    <strong>CONSTANTS</strong>
+    </dt>
+    <dd>
+    Constants with all information about the time, date and moon
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">time</span>
+        length of one day in s (default 5.75h right now)
+        </li>
+        <li><span class="parameter">lengthOfNight</span>
+        length of only the night in s (2h)
+        </li>
+        <li><span class="parameter">lengthOfHour</span>
+
+
+        </li>
+        <li><span class="parameter">startTime</span>
+        exact unix time at ingame noon as unix timestamp 1398044126 minus offset from midnight 10477.5 (lengthOfDay/2) in s
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "dateListener"></a>
+    <strong>dateListener</strong>
+    </dt>
+    <dd>
+    Initialize
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Local_Functions"></a>Local Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Protect"></a>
+    <strong>Protect (tbl)</strong>
+    </dt>
+    <dd>
+    Makes a table read-only
+ Source: http://andrejs-cainikovs.blogspot.com/2009/05/lua-constants.html
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">tbl</span>
+         any table to be made read-only
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a read-only table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "IsNotNilOrEmpty"></a>
+    <strong>IsNotNilOrEmpty (obj)</strong>
+    </dt>
+    <dd>
+    Check if string is nil or empty
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         string to be checked
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        bool if it is not nil or empty
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "IsString"></a>
+    <strong>IsString (obj)</strong>
+    </dt>
+    <dd>
+    Check if object is a string
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         string to be checked
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        bool if it is a string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "IsTimestamp"></a>
+    <strong>IsTimestamp (timestamp)</strong>
+    </dt>
+    <dd>
+    Check if input is a timestamp
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         object to be checked
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        bool if it matches the condition
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CalculateLibClockTST"></a>
+    <strong>CalculateLibClockTST ([timestamp])</strong>
+    </dt>
+    <dd>
+    Get the lore time
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be the current time.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX timestamp in s
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        {hour, minute, second} table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CalculateLibClockTSTDate"></a>
+    <strong>CalculateLibClockTSTDate ([timestamp])</strong>
+    </dt>
+    <dd>
+    Get the lore date
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be calculated from the current time.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX timestamp in s
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        {era, year, month, day, weekDay} table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetCurrentPhaseName"></a>
+    <strong>GetCurrentPhaseName (phasePercentage)</strong>
+    </dt>
+    <dd>
+    Get the name of the current moon phase
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">phasePercentage</span>
+         percentage already pased in the current phase
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        current moon phase string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetSecondsUntilFullMoon"></a>
+    <strong>GetSecondsUntilFullMoon (phasePercentage)</strong>
+    </dt>
+    <dd>
+    Calculate the seconds until the moon is full again
+ returns 0 if the moon is already full
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">phasePercentage</span>
+         percentage already pased in the current phase
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number of seconds until the moon is full again
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CalculateMoon"></a>
+    <strong>CalculateMoon (timestamp)</strong>
+    </dt>
+    <dd>
+    Calculate the lore moon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX to be calculated from
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <p> moon object { percentageOfPhaseDone, currentPhaseName, isWaxing,</p>
+
+<pre><code>  percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
+  secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
+</code></pre>
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Update"></a>
+    <strong>Update ()</strong>
+    </dt>
+    <dd>
+    Update the time with the current timestamp and store it in the time variable
+ If neccessary, update the date and store in also
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MoonUpdate"></a>
+    <strong>MoonUpdate ()</strong>
+    </dt>
+    <dd>
+    Update the moon with the current timestamp and store it in the moon variable
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PrintHelp"></a>
+    <strong>PrintHelp ()</strong>
+    </dt>
+    <dd>
+    Event to update the time and date and its listeners
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CommandHandler"></a>
+    <strong>CommandHandler (options)</strong>
+    </dt>
+    <dd>
+    Handel a given command
+ If time is given, the time table will be printed.
+ If date is given, the date table will be printed.
+ If moon is given, the moon table will be printed.
+ If the second argument is a timestamp, it will be the basis for the calculations.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">options</span>
+         table of arguments
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RegisterCommands"></a>
+    <strong>RegisterCommands ()</strong>
+    </dt>
+    <dd>
+    Register the slash command &lsquo;LibClockTST&rsquo;
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "OnUpdate"></a>
+    <strong>OnUpdate ()</strong>
+    </dt>
+    <dd>
+    Event to update the time and date and its listeners
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "OnMoonUpdate"></a>
+    <strong>OnMoonUpdate ()</strong>
+    </dt>
+    <dd>
+    Event to update the moon and its listeners
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "OnLoad"></a>
+    <strong>OnLoad (_, addonName)</strong>
+    </dt>
+    <dd>
+    Event to be called on Load
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_</span>
+
+
+        </li>
+        <li><span class="parameter">addonName</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-01-22 01:04:53 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
