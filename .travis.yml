@@ -1,4 +1,4 @@
-language: python
+language: c
 sudo: false
 
 env:
@@ -22,3 +22,4 @@ script:
 
 after_success:
   - luacov-coveralls -e $TRAVIS_BUILD_DIR/lua_install
+  - bash <(curl -s https://codecov.io/bash)
