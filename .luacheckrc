@@ -13,5 +13,9 @@ stds.eso = {
 }
 self = false
 exclude_files = {
-    "Test/ZOMock.lua"
+    "Test/ZOMock.lua",
+}
+include_files = {
+    "Lib/**/*.lua",
+    "Test/**/*.lua"
 }
