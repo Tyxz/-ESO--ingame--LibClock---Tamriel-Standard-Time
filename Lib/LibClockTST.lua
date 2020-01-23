@@ -75,11 +75,10 @@ LibClockTST.CONSTANTS.time = {
 }
 
 --- Constant information to calculate the Tamriel Standard Time date
+-- Eso Release was the 04.04.2014 at UNIX 1396569600 real time
+-- 93 days after 1.1.582 in-game
 LibClockTST.CONSTANTS.date = {
-    startTime = 1394617983.724, --[[
-		Eso Release 04.04.2014 UNIX: 1396569600
-		- calculated offset to midnight 2801.2760416667
-		- offset of days to 1.1.582, 1948815 ((31 + 28 + 31 + 3) * const.time.lengthOfDay) ]]
+    startTime = 1394617983.724, -- release - offset to midnight 2801.2760416667 - offset of days 1948815
     startWeekDay = 2, -- Start day Friday (5) - 93 days to 1.1. Therefore, the weekday is (4 - 93)%7
     startYear = 582, -- offset in years, because the game starts in 2E 582
     startEra = 2, -- era the world is in
@@ -104,10 +103,7 @@ LibClockTST.CONSTANTS.date.monthLength = {
 
 --- Constant information to calculate the moon position
 LibClockTST.CONSTANTS.moon = {
-		startTime = 1436153095, --[[
-			1435838770 from https://esoclock.uesp.net/ + half phase
-			= 1436153095 - phaseOffsetToEnd * phaseLengthInSeconds
-			= 1436112233 ]]
+		startTime = 1436153095, -- start time calculated from https://esoclock.uesp.net/ values to be new moon
 		phaseLength = 30, -- ingame days
 		phaseLengthInSeconds = 628650, -- in s, phaseLength * dayLength
 		singlePhaseLength = 3.75, -- in ingame days
@@ -348,10 +344,12 @@ end
 local function RegisterCommands()
 	SLASH_COMMANDS["/tst"] = function (extra)
 		local options = {}
-		local searchResult = { string.match(extra,"^(%S*)%s*(.-)$") }
-		for i,v in pairs(searchResult) do
-			if (v ~= nil and v ~= "") then
-				options[i] = string.lower(v)
+		if extra then
+			local searchResult = { string.match(extra,"^(%S*)%s*(.-)$") }
+			for i,v in pairs(searchResult) do
+				if (v ~= nil and v ~= "") then
+					options[i] = string.lower(v)
+				end
 			end
 		end
 		CommandHandler(options)

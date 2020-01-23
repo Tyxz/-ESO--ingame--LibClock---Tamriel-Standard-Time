@@ -26,8 +26,8 @@ describe("ZOMock", function()
 end)
 
 describe("LibClockTST", function()
-local TST = LibClockTST
-local const = TST.CONSTANTS
+    local TST = LibClockTST
+    local const = TST.CONSTANTS
 
     describe("time", function()
 
@@ -65,6 +65,87 @@ local const = TST.CONSTANTS
             local time = 1579645663
             local moon = TST:GetMoon(time)
             assert.are.same({ math.floor(moon.percentageOfFullMoon*100), moon.currentPhaseName}, {51, "firstQuarter"})
+        end)
+    end)
+
+    insulate("an insulated test", function()
+        local lastEntry
+        _G.d = spy.new(function(entry) lastEntry = entry  end)
+        describe("commands", function()
+            it("should print time object when no argument", function()
+                -- arrange
+                local tTime = TST:GetTime()
+                -- act
+                SLASH_COMMANDS["/tst"]()
+                -- assert
+                assert.spy(d).was_called_with(tTime)
+            end)
+            it("should print time object", function()
+                -- arrange
+                local tArg = "time"
+                local tTime = TST:GetTime()
+                -- act
+                SLASH_COMMANDS["/tst"](tArg)
+                -- assert
+                assert.spy(d).was_called_with(tTime)
+            end)
+            it("should print a specific time object", function()
+                -- arrange
+                local midnight = const.time.lengthOfDay * 100 + const.time.startTime
+                local tArg = "time " .. midnight
+                local tTime = TST:GetTime(midnight)
+                -- act
+                SLASH_COMMANDS["/tst"](tArg)
+                -- assert
+                assert.spy(d).was_called_with(tTime)
+            end)
+            it("should print date object", function()
+                -- arrange
+                local tArg = "date"
+                local tDate = TST:GetDate()
+                -- act
+                SLASH_COMMANDS["/tst"](tArg)
+                -- assert
+                assert.spy(d).was_called_with(tDate)
+            end)
+            it("should print a specific date object", function()
+                -- arrange
+                local tTime = const.date.startTime
+                local tArg = "date " .. tTime
+                local tDate = TST:GetDate(tTime)
+                -- act
+                SLASH_COMMANDS["/tst"](tArg)
+                -- assert
+                assert.spy(d).was_called_with(tDate)
+            end)
+            it("should print moon object", function()
+                -- arrange
+                local tArg = "moon"
+                local tMoon = TST:GetMoon()
+                -- act
+                SLASH_COMMANDS["/tst"](tArg)
+                -- assert
+                assert.spy(d).was_called_with(tMoon)
+            end)
+            it("should print a specific moon object", function()
+                -- arrange
+                local tTime = const.moon.startTime
+                local tArg = "moon " .. tTime
+                local tMoon = TST:GetMoon(tTime)
+                -- act
+                SLASH_COMMANDS["/tst"](tArg)
+                -- assert
+                assert.spy(d).was_called_with(tMoon)
+            end)
+            it("should print help string", function()
+                -- arrange
+                local tArg = "help"
+                -- act
+                SLASH_COMMANDS["/tst"](tArg)
+                -- assert
+                assert.spy(d).called()
+                assert.is_true(type(lastEntry) == "string")
+            end)
         end)
     end)
 

@@ -8,6 +8,12 @@ GetTimeStamp = function() return os.time(os.date("!*t")) end
 
 EVENT_MANAGER = {}
 
+function d(...)
+  for _, v in ipairs(arg) do
+    require("pl.pretty").dump(v)
+  end
+end
+
 function EVENT_MANAGER:RegisterForUpdate(eventHandle, updateDelay, OnUpdate)
   updateListener[eventHandle] = OnUpdate
   OnUpdate()
@@ -18,7 +24,7 @@ function EVENT_MANAGER:UnregisterForUpdate(eventHandle)
 end
 
 function EVENT_MANAGER:RegisterForEvent(eventHandle, event, OnCall)
-  OnCall()
+  OnCall(nil, "LibClockTST")
 end
 
 function EVENT_MANAGER:UnregisterForEvent(eventHandle, event) end
