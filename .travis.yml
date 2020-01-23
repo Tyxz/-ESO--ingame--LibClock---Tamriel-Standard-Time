@@ -1,4 +1,4 @@
-language: c
+language: python
 sudo: false
 
 env:
@@ -17,7 +17,7 @@ install:
   - luarocks install luacov-coveralls
 
 script:
-  - luacheck --config .luacheckrc Lib/*.lua Test/**/*.lua
+  - luacheck .
   - busted -R Test/Lib --verbose --coverage
 
 after_success:

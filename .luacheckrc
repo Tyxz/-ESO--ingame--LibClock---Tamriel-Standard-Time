@@ -12,3 +12,6 @@ stds.eso = {
     }
 }
 self = false
+exclude_files = {
+    "Test/ZOMock.lua"
+}
