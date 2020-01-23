@@ -29,6 +29,13 @@ describe("LibClockTST", function()
     local TST = LibClockTST
     local const = TST.CONSTANTS
 
+    it("should create a custom object", function()
+        local tDelay, tMoonDelay = 1, 2
+        local tLib = LibClockTST:New(tDelay, tMoonDelay)
+        assert.is.equal(tDelay, tLib.updateDelay)
+        assert.is.equal(tMoonDelay, tLib.moonUpdateDelay)
+    end)
+
     describe("time", function()
 
         it("should calculate time", function()
