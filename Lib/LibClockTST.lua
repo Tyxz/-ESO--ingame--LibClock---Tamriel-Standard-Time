@@ -319,20 +319,20 @@ end
 -- If the second argument is a timestamp, it will be the basis for the calculations.
 -- @param options table of arguments
 local function CommandHandler(options)
-	if #options == 0 or options[1] == "help" or #options > 2 then
+	if options[1] == "help" or #options > 2 then
 		PrintHelp()
 	else
-		local timestamp
+		local timestamp = GetTimeStamp()
 		local tNeedToUpdateDate = needToUpdateDate
 		if #options == 2 then
-			if not string.match(options[2], "^%d%d%d%d%d%d%d%d%d%d$") then
+			if not IsTimestamp(options[2]) then
 				d("Please give only a 10 digit long timestamp as your seconds argument!")
 				return
 			else
 				timestamp = tonumber(options[2])
 			end
 		end
-		if options[1] == "time" then
+		if #options == 0 or options[1] == "time" then
 			d(CalculateLibClockTST(timestamp))
 		elseif options[1] == "date" then
 			d(CalculateLibClockTSTDate(timestamp))
