@@ -71,25 +71,23 @@ local const = TST.CONSTANTS
     describe("subscription", function()
 
         local subscription = "test"
+        local f = spy.new(function(_, _) end)
 
         describe("error", function()
 
             describe("register", function()
 
                 it("should throw error if subscribing multiple times with same handle", function()
-                    local f = spy.new(function(time, date) end)
                     LibClockTST:Register(subscription, f)
                     assert.has_error(function() LibClockTST:Register(subscription, f) end)
                     LibClockTST:CancelSubscription(subscription)
                 end)
 
                 it("should throw error if subscribing without handle", function()
-                    local f = spy.new(function(time, date) end)
                     assert.has_error(function() LibClockTST:Register(nil, f) end)
                 end)
 
                 it("should throw error if subscribing with empty handle", function()
-                    local f = spy.new(function(time, date) end)
                     assert.has_error(function() LibClockTST:Register("", f) end)
                 end)
 
@@ -109,11 +107,11 @@ local const = TST.CONSTANTS
                 end)
 
                 it("should be able to register same handler after cancelation", function()
-                    local f = spy.new(function(time, date) end)
                     LibClockTST:Register(subscription, f)
                     LibClockTST:CancelSubscription(subscription)
-                    assert.has_no.error(function() 
-                    LibClockTST:Register(subscription, f) end)
+                    assert.has_no.error(function()
+                        LibClockTST:Register(subscription, f)
+                    end)
                     LibClockTST:CancelSubscription(subscription)
                 end)
             end)
@@ -123,7 +121,6 @@ local const = TST.CONSTANTS
         describe("time and date", function()
 
             it("should get the current time and date by update", function()
-                local f = spy.new(function(time, date) end)
                 LibClockTST:Register(subscription, f)
                 local time = LibClockTST:GetTime()
                 local date = LibClockTST:GetDate()
@@ -133,7 +130,6 @@ local const = TST.CONSTANTS
             end)
 
             it("should get the current time by update", function()
-                local f = spy.new(function(time) end)
                 LibClockTST:RegisterForTime(subscription, f)
                 local time = LibClockTST:GetTime()
                 assert.spy(f).was.called()
@@ -142,7 +138,6 @@ local const = TST.CONSTANTS
             end)
 
             it("should get the current date by update", function()
-                local f = spy.new(function(date) end)
                 LibClockTST:RegisterForDate(subscription, f)
                 local date = LibClockTST:GetDate()
                 assert.spy(f).was.called()
@@ -150,12 +145,11 @@ local const = TST.CONSTANTS
                 LibClockTST:CancelSubscriptionForDate(subscription)
             end)
 
-        end)  
+        end)
 
         describe("moon", function()
 
             it("should get the current moon by update", function()
-                local f = spy.new(function(moon) end)
                 LibClockTST:RegisterForMoon(subscription, f)
                 local moon = LibClockTST:GetMoon()
                 assert.spy(f).was.called()
@@ -163,8 +157,8 @@ local const = TST.CONSTANTS
                 LibClockTST:CancelSubscriptionForMoon(subscription)
             end)
 
-        end)  
+        end)
 
-    end) 
+    end)
 
 end)

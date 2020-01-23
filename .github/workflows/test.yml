@@ -15,5 +15,12 @@ jobs:
 
     - name: build
       run: luarocks install busted
-    - name: test
-      run: busted -o utfTerminal Test/Lib/LibClockTSTTest.lua
+        && luarocks install luacheck
+        && luarocks install luacov
+        && luarocks install luacov-coveralls
+
+    - name: luacheck
+      run: luacheck --config .luacheckrc Lib/**/*.lua Test/**/*.lua
+
+    - name: busted
+      run: busted -R Test/Lib --verbose --coverage

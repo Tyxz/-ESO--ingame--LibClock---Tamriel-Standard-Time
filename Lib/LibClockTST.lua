@@ -8,7 +8,7 @@
 ------------
 -- LibClock - Tamriel Standard Time
 -- Public functions to get information about the in-game time, date and moon
--- You can call them directly or subscribe to updates. 
+-- You can call them directly or subscribe to updates.
 -- Each function also gives the option to get information about a specific timestamp.
 ----
 
@@ -28,7 +28,7 @@ LibClockTST = {
 local function Protect(tbl)
 	return setmetatable({}, {
 		__index = tbl,
-		__newindex = function(t, key, value)
+		__newindex = function(_, key, value)
 			error("attempting to change constant " ..
 				tostring(key) .. " to " .. tostring(value), 2)
 		end
@@ -38,15 +38,8 @@ end
 -- Check if string is nil or empty
 -- @param obj string to be checked
 -- @return bool if it is not nil or empty
-local function IsNotNilOrEmpty(obj) 
+local function IsNotNilOrEmpty(obj)
     return obj ~= nil and string.match(tostring(obj), "^%s*$") == nil
-end
-
--- Check if object is a string
--- @param obj string to be checked
--- @return bool if it is a string
-local function IsString(str) 
-    return type(str) == "string"
 end
 
 -- Check if input is a timestamp
@@ -78,20 +71,23 @@ LibClockTST.CONSTANTS.time = {
     lengthOfDay = 20955, -- length of one day in s (default 5.75h right now)
     lengthOfNight = 7200, -- length of only the night in s (2h)
     lengthOfHour = 873.125, -- length of an in-game hour in s
-    startTime = 1398033648.5, -- exact unix time at ingame noon as unix timestamp 1398044126 minus offset from midnight 10477.5 (lengthOfDay/2) in s
+    startTime = 1398033648.5, -- unix timestamp in s at in-game noon 1398044126 - 10477.5 (lengthOfDay/2)
 }
 
 --- Constant information to calculate the Tamriel Standard Time date
 LibClockTST.CONSTANTS.date = {
-    startTime = 1394617983.724, -- Eso Release  04.04.2014  UNIX: 1396569600 minus calculated offset to midnight 2801.2760416667 minus offset of days to 1.1.582, 1948815 ((31 + 28 + 31 + 3) * const.time.lengthOfDay)
-    startWeekDay = 2, -- Start day was Friday (5) but start time of calculation is 93 days before. Therefore, the weekday is (4 - 93)%7
+    startTime = 1394617983.724, --[[
+		Eso Release 04.04.2014 UNIX: 1396569600
+		- calculated offset to midnight 2801.2760416667
+		- offset of days to 1.1.582, 1948815 ((31 + 28 + 31 + 3) * const.time.lengthOfDay) ]]
+    startWeekDay = 2, -- Start day Friday (5) - 93 days to 1.1. Therefore, the weekday is (4 - 93)%7
     startYear = 582, -- offset in years, because the game starts in 2E 582
-    startEra = 2, -- era the world is in 
+    startEra = 2, -- era the world is in
     yearLength = 365, -- length of the in-game year in days
 }
 
 --- Different length of month within the year in days
-LibClockTST.CONSTANTS.date.monthLength = { 
+LibClockTST.CONSTANTS.date.monthLength = {
     [1] = 31, -- Januar
     [2] = 28, -- Februar
     [3] = 31, -- March
@@ -108,13 +104,16 @@ LibClockTST.CONSTANTS.date.monthLength = {
 
 --- Constant information to calculate the moon position
 LibClockTST.CONSTANTS.moon = {
-		startTime = 1436153095, -- 1435838770 from https://esoclock.uesp.net/ + half phase = 1436153095 - phaseOffsetToEnd * phaseLengthInSeconds = 1436112233
+		startTime = 1436153095, --[[
+			1435838770 from https://esoclock.uesp.net/ + half phase
+			= 1436153095 - phaseOffsetToEnd * phaseLengthInSeconds
+			= 1436112233 ]]
 		phaseLength = 30, -- ingame days
 		phaseLengthInSeconds = 628650, -- in s, phaseLength * dayLength
 		singlePhaseLength = 3.75, -- in ingame days
 		singlePhaseLengthInSeconds = 78581.25, -- in s, singlePhaseLength * dayLength
 		phasesPercentageBetweenPhases = 0.125, -- length in percentage of whole phase of each single phase
-} 
+}
 
 --- Percentage until end of phase  from https://esoclock.uesp.net/
 LibClockTST.CONSTANTS.moon.phasesPercentage = {
@@ -255,7 +254,7 @@ local function CalculateMoon(timestamp)
 	local secondsUntilFullMoon = GetSecondsUntilFullMoon(phasePercentage)
 	local daysUntilFullMoon = secondsUntilFullMoon / const.time.lengthOfDay
     local percentageOfFullMoon
-    if phasePercentage > 0.5 then  
+    if phasePercentage > 0.5 then
         percentageOfFullMoon = 1 - (phasePercentage - 0.5) * 2
     else
         percentageOfFullMoon = phasePercentage * 2
