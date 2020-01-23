@@ -17,7 +17,7 @@ install:
   - luarocks install luacov-coveralls
 
 script:
-  - luacheck  --config .luacheckrc
+  - luacheck --config .luacheckrc Lib/*.lua Test/**/*.lua
   - busted -R Test/Lib --verbose --coverage
 
 after_success:

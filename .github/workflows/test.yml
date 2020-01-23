@@ -20,7 +20,7 @@ jobs:
         && luarocks install luacov-coveralls
 
     - name: luacheck
-      run: luacheck --config .luacheckrc Lib/**/*.lua Test/**/*.lua
+      run: luacheck --config .luacheckrc Lib/*.lua Test/**/*.lua
 
     - name: busted
       run: busted -R Test/Lib --verbose --coverage
