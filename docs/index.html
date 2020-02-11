@@ -31,6 +31,7 @@
 <ul>
 <li><a href="#Functions">Functions</a></li>
 <li><a href="#Tables">Tables</a></li>
+<li><a href="#Local_Functions">Local Functions</a></li>
 </ul>
 
 
@@ -48,10 +49,11 @@
 <div id="content">
 
 <h1>Module <code>LibClockTST</code></h1>
-<p>Project:    LibClock &ndash; Tamriel Standard Time
+<p>Location:   Lib/LibClockTST.lua
 <pre>
 Author:     Arne Rantzen (Tyx)
 Created:    <span class="number">2020</span>&ndash;<span class="number">01</span>&ndash;<span class="number">20</span>
+Updated:    <span class="number">2020</span>&ndash;<span class="number">01</span>&ndash;<span class="number">22</span>
 License:    GPL-<span class="number">3.0</span>
 </pre>
  LibClock &ndash; Tamriel Standard Time
@@ -63,34 +65,10 @@ License:    GPL-<span class="number">3.0</span>
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Instance:CalculateTST">Instance:CalculateTST ([timestamp])</a></td>
-	<td class="summary">Get the lore time
- If a parameter is given, the lore date of the UNIX timestamp will be returned,
- otherwise it will be the current time.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Instance:CalculateTSTDate">Instance:CalculateTSTDate ([timestamp])</a></td>
-	<td class="summary">Get the lore date
- If a parameter is given, the lore date of the UNIX timestamp will be returned,
- otherwise it will be calculated from the current time.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Instance:GetCurrentPhaseName">Instance:GetCurrentPhaseName (phasePercentage)</a></td>
-	<td class="summary">Get the name of the current moon phase</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Instance:GetSecondsUntilFullMoon">Instance:GetSecondsUntilFullMoon (phasePercentage)</a></td>
-	<td class="summary">Calculate the seconds until the moon is full again
- returns 0 if the moon is already full</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Instance:CalculateMoon">Instance:CalculateMoon (timestamp)</a></td>
-	<td class="summary">Calculate the lore moon</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Instance:New">Instance:New ([updateDelay[, moonUpdateDelay]])</a></td>
-	<td class="summary">Constructor
- Create a object to use custom delays between updates.</td>
+	<td class="name" nowrap><a href="#Instance">Instance (super)</a></td>
+	<td class="summary">Instance of library
+ You can either get a singleton instance,
+ or create your custom instance with your specific delays.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#New">New ([updateDelay[, moonUpdateDelay]])</a></td>
@@ -98,59 +76,53 @@ License:    GPL-<span class="number">3.0</span>
  Create a object to use custom delays between updates.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance">Instance ()</a></td>
-	<td class="summary">Instace of library
- You can either get a singleton instance,
- or create your custom instance with your specific delays.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Instance:GetTime">Instance:GetTime ([timestamp])</a></td>
+	<td class="name" nowrap><a href="#GetTime">GetTime ([timestamp])</a></td>
 	<td class="summary">Get the lore time
  If a parameter is given, the lore date of the UNIX timestamp will be returned,
  otherwise it will be the current time.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:GetDate">Instance:GetDate ([timestamp])</a></td>
+	<td class="name" nowrap><a href="#GetDate">GetDate ([timestamp])</a></td>
 	<td class="summary">Get the lore date
  If a parameter is given, the lore date of the UNIX timestamp will be returned,
  otherwise it will be calculated from the current time.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:GetMoon">Instance:GetMoon ([timestamp])</a></td>
+	<td class="name" nowrap><a href="#GetMoon">GetMoon ([timestamp])</a></td>
 	<td class="summary">Get the lore moon
  If a parameter is given, the lore moon of the UNIX timestamp will be returned,
  otherwise it will be calculated from the current time.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:Register">Instance:Register (addonId, func)</a></td>
+	<td class="name" nowrap><a href="#Register">Register (addonId, func)</a></td>
 	<td class="summary">Register an addon to subscribe to date and time updates.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:CancelSubscription">Instance:CancelSubscription (addonId)</a></td>
+	<td class="name" nowrap><a href="#CancelSubscription">CancelSubscription (addonId)</a></td>
 	<td class="summary">Cancel a subscription for the date and time updates.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:RegisterForTime">Instance:RegisterForTime (addonId, func)</a></td>
+	<td class="name" nowrap><a href="#RegisterForTime">RegisterForTime (addonId, func)</a></td>
 	<td class="summary">Register an addon to subscribe to time updates.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:CancelSubscriptionForTime">Instance:CancelSubscriptionForTime (addonId)</a></td>
+	<td class="name" nowrap><a href="#CancelSubscriptionForTime">CancelSubscriptionForTime (addonId)</a></td>
 	<td class="summary">Cancel a subscription for the time updates.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:RegisterForDate">Instance:RegisterForDate (addonId, func)</a></td>
+	<td class="name" nowrap><a href="#RegisterForDate">RegisterForDate (addonId, func)</a></td>
 	<td class="summary">Register an addon to subscribe to date updates.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:CancelSubscriptionForDate">Instance:CancelSubscriptionForDate (addonId)</a></td>
+	<td class="name" nowrap><a href="#CancelSubscriptionForDate">CancelSubscriptionForDate (addonId)</a></td>
 	<td class="summary">Cancel a subscription for the date updates.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:RegisterForMoon">Instance:RegisterForMoon (addonId, func)</a></td>
+	<td class="name" nowrap><a href="#RegisterForMoon">RegisterForMoon (addonId, func)</a></td>
 	<td class="summary">Register an addon to subscribe to moon updates.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Instance:CancelSubscriptionForMoon">Instance:CancelSubscriptionForMoon (addonId)</a></td>
+	<td class="name" nowrap><a href="#CancelSubscriptionForMoon">CancelSubscriptionForMoon (addonId)</a></td>
 	<td class="summary">Cancel a subscription for the moon updates.</td>
 	</tr>
 </table>
@@ -161,26 +133,54 @@ License:    GPL-<span class="number">3.0</span>
 	<td class="summary">Constants with all information about the time, date and moon</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.time">LibClockTST.CONSTANTS.time</a></td>
+	<td class="name" nowrap><a href="#time">time</a></td>
 	<td class="summary">Constant information to calculate the Tamriel Standard Time</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.date">LibClockTST.CONSTANTS.date</a></td>
+	<td class="name" nowrap><a href="#date">date</a></td>
 	<td class="summary">Constant information to calculate the Tamriel Standard Time date
  Eso Release was the 04.04.2014 at UNIX 1396569600 real time
  93 days after 1.1.582 in-game</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.date.monthLength">LibClockTST.CONSTANTS.date.monthLength</a></td>
+	<td class="name" nowrap><a href="#date.monthLength">date.monthLength</a></td>
 	<td class="summary">Different length of month within the year in days</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.moon">LibClockTST.CONSTANTS.moon</a></td>
+	<td class="name" nowrap><a href="#moon">moon</a></td>
 	<td class="summary">Constant information to calculate the moon position</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#LibClockTST.CONSTANTS.moon.phasesPercentage">LibClockTST.CONSTANTS.moon.phasesPercentage</a></td>
+	<td class="name" nowrap><a href="#moon.phasesPercentage">moon.phasesPercentage</a></td>
 	<td class="summary">Percentage until end of phase  from https://esoclock.uesp.net/</td>
+	</tr>
+</table>
+<h2><a href="#Local_Functions">Local Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#CalculateTST">CalculateTST ([timestamp])</a></td>
+	<td class="summary">Get the lore time
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be the current time.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CalculateTSTDate">CalculateTSTDate ([timestamp])</a></td>
+	<td class="summary">Get the lore date
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be calculated from the current time.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetCurrentPhaseName">GetCurrentPhaseName (phasePercentage)</a></td>
+	<td class="summary">Get the name of the current moon phase</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetSecondsUntilFullMoon">GetSecondsUntilFullMoon (phasePercentage)</a></td>
+	<td class="summary">Calculate the seconds until the moon is full again
+ returns 0 if the moon is already full</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CalculateMoon">CalculateMoon (timestamp)</a></td>
+	<td class="summary">Calculate the lore moon</td>
 	</tr>
 </table>
 
@@ -192,167 +192,27 @@ License:    GPL-<span class="number">3.0</span>
 
     <dl class="function">
     <dt>
-    <a name = "Instance:CalculateTST"></a>
-    <strong>Instance:CalculateTST ([timestamp])</strong>
+    <a name = "Instance"></a>
+    <strong>Instance (super)</strong>
     </dt>
     <dd>
-    Get the lore time
- If a parameter is given, the lore date of the UNIX timestamp will be returned,
- otherwise it will be the current time.
+    Instance of library
+ You can either get a singleton instance,
+ or create your custom instance with your specific delays.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">timestamp</span>
-         UNIX timestamp in s
-         (<em>optional</em>)
+        <li><span class="parameter">super</span>
+
+
         </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-        {hour, minute, second} table
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Instance:CalculateTSTDate"></a>
-    <strong>Instance:CalculateTSTDate ([timestamp])</strong>
-    </dt>
-    <dd>
-    Get the lore date
- If a parameter is given, the lore date of the UNIX timestamp will be returned,
- otherwise it will be calculated from the current time.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">timestamp</span>
-         UNIX timestamp in s
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        {era, year, month, day, weekDay} table
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Instance:GetCurrentPhaseName"></a>
-    <strong>Instance:GetCurrentPhaseName (phasePercentage)</strong>
-    </dt>
-    <dd>
-    Get the name of the current moon phase
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">phasePercentage</span>
-         percentage already pased in the current phase
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        current moon phase string
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Instance:GetSecondsUntilFullMoon"></a>
-    <strong>Instance:GetSecondsUntilFullMoon (phasePercentage)</strong>
-    </dt>
-    <dd>
-    Calculate the seconds until the moon is full again
- returns 0 if the moon is already full
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">phasePercentage</span>
-         percentage already pased in the current phase
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        number of seconds until the moon is full again
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Instance:CalculateMoon"></a>
-    <strong>Instance:CalculateMoon (timestamp)</strong>
-    </dt>
-    <dd>
-    Calculate the lore moon
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">timestamp</span>
-         UNIX to be calculated from
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        <p> moon object { percentageOfPhaseDone, currentPhaseName, isWaxing,</p>
-
-<pre><code>  percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
-  secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
-</code></pre>
-
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Instance:New"></a>
-    <strong>Instance:New ([updateDelay[, moonUpdateDelay]])</strong>
-    </dt>
-    <dd>
-    Constructor
- Create a object to use custom delays between updates.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">updateDelay</span>
-         delays between two updates in ms to calculate the time and date
-         (<em>optional</em>)
-        </li>
-        <li><span class="parameter">moonUpdateDelay</span>
-         delays between two updates in ms to calculate the moon
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        Instance object
+        LibClockTST object
     </ol>
 
 
@@ -392,29 +252,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "Instance"></a>
-    <strong>Instance ()</strong>
-    </dt>
-    <dd>
-    Instace of library
- You can either get a singleton instance,
- or create your custom instance with your specific delays.
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-        LibClockTST object
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Instance:GetTime"></a>
-    <strong>Instance:GetTime ([timestamp])</strong>
+    <a name = "GetTime"></a>
+    <strong>GetTime ([timestamp])</strong>
     </dt>
     <dd>
     Get the lore time
@@ -441,8 +280,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "Instance:GetDate"></a>
-    <strong>Instance:GetDate ([timestamp])</strong>
+    <a name = "GetDate"></a>
+    <strong>GetDate ([timestamp])</strong>
     </dt>
     <dd>
     Get the lore date
@@ -469,8 +308,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "Instance:GetMoon"></a>
-    <strong>Instance:GetMoon ([timestamp])</strong>
+    <a name = "GetMoon"></a>
+    <strong>GetMoon ([timestamp])</strong>
     </dt>
     <dd>
     Get the lore moon
@@ -502,8 +341,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "Instance:Register"></a>
-    <strong>Instance:Register (addonId, func)</strong>
+    <a name = "Register"></a>
+    <strong>Register (addonId, func)</strong>
     </dt>
     <dd>
     Register an addon to subscribe to date and time updates.
@@ -525,8 +364,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "Instance:CancelSubscription"></a>
-    <strong>Instance:CancelSubscription (addonId)</strong>
+    <a name = "CancelSubscription"></a>
+    <strong>CancelSubscription (addonId)</strong>
     </dt>
     <dd>
     Cancel a subscription for the date and time updates.
@@ -546,8 +385,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "Instance:RegisterForTime"></a>
-    <strong>Instance:RegisterForTime (addonId, func)</strong>
+    <a name = "RegisterForTime"></a>
+    <strong>RegisterForTime (addonId, func)</strong>
     </dt>
     <dd>
     Register an addon to subscribe to time updates.
@@ -567,14 +406,14 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Instance:Register">LibClockTST:Register</a>
+         <a href="index.html#Register">LibClockTST:Register</a>
     </ul>
 
 
 </dd>
     <dt>
-    <a name = "Instance:CancelSubscriptionForTime"></a>
-    <strong>Instance:CancelSubscriptionForTime (addonId)</strong>
+    <a name = "CancelSubscriptionForTime"></a>
+    <strong>CancelSubscriptionForTime (addonId)</strong>
     </dt>
     <dd>
     Cancel a subscription for the time updates.
@@ -591,14 +430,14 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Instance:CancelSubscription">LibClockTST:CancelSubscription</a>
+         <a href="index.html#CancelSubscription">LibClockTST:CancelSubscription</a>
     </ul>
 
 
 </dd>
     <dt>
-    <a name = "Instance:RegisterForDate"></a>
-    <strong>Instance:RegisterForDate (addonId, func)</strong>
+    <a name = "RegisterForDate"></a>
+    <strong>RegisterForDate (addonId, func)</strong>
     </dt>
     <dd>
     Register an addon to subscribe to date updates.
@@ -618,14 +457,14 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Instance:Register">LibClockTST:Register</a>
+         <a href="index.html#Register">LibClockTST:Register</a>
     </ul>
 
 
 </dd>
     <dt>
-    <a name = "Instance:CancelSubscriptionForDate"></a>
-    <strong>Instance:CancelSubscriptionForDate (addonId)</strong>
+    <a name = "CancelSubscriptionForDate"></a>
+    <strong>CancelSubscriptionForDate (addonId)</strong>
     </dt>
     <dd>
     Cancel a subscription for the date updates.
@@ -642,14 +481,14 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Instance:CancelSubscription">LibClockTST:CancelSubscription</a>
+         <a href="index.html#CancelSubscription">LibClockTST:CancelSubscription</a>
     </ul>
 
 
 </dd>
     <dt>
-    <a name = "Instance:RegisterForMoon"></a>
-    <strong>Instance:RegisterForMoon (addonId, func)</strong>
+    <a name = "RegisterForMoon"></a>
+    <strong>RegisterForMoon (addonId, func)</strong>
     </dt>
     <dd>
     Register an addon to subscribe to moon updates.
@@ -669,20 +508,14 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Instance:Register">LibClockTST:Register</a>
+         <a href="index.html#Register">LibClockTST:Register</a>
     </ul>
 
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example">moon = { percentageOfPhaseDone, currentPhaseName, isWaxing,
-     percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
-     secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }</pre>
-    </ul>
 
 </dd>
     <dt>
-    <a name = "Instance:CancelSubscriptionForMoon"></a>
-    <strong>Instance:CancelSubscriptionForMoon (addonId)</strong>
+    <a name = "CancelSubscriptionForMoon"></a>
+    <strong>CancelSubscriptionForMoon (addonId)</strong>
     </dt>
     <dd>
     Cancel a subscription for the moon updates.
@@ -699,7 +532,7 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Instance:CancelSubscription">LibClockTST:CancelSubscription</a>
+         <a href="index.html#CancelSubscription">LibClockTST:CancelSubscription</a>
     </ul>
 
 
@@ -735,8 +568,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "LibClockTST.CONSTANTS.time"></a>
-    <strong>LibClockTST.CONSTANTS.time</strong>
+    <a name = "time"></a>
+    <strong>time</strong>
     </dt>
     <dd>
     Constant information to calculate the Tamriel Standard Time
@@ -764,8 +597,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "LibClockTST.CONSTANTS.date"></a>
-    <strong>LibClockTST.CONSTANTS.date</strong>
+    <a name = "date"></a>
+    <strong>date</strong>
     </dt>
     <dd>
     Constant information to calculate the Tamriel Standard Time date
@@ -798,8 +631,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "LibClockTST.CONSTANTS.date.monthLength"></a>
-    <strong>LibClockTST.CONSTANTS.date.monthLength</strong>
+    <a name = "date.monthLength"></a>
+    <strong>date.monthLength</strong>
     </dt>
     <dd>
     Different length of month within the year in days
@@ -851,8 +684,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "LibClockTST.CONSTANTS.moon"></a>
-    <strong>LibClockTST.CONSTANTS.moon</strong>
+    <a name = "moon"></a>
+    <strong>moon</strong>
     </dt>
     <dd>
     Constant information to calculate the moon position
@@ -887,8 +720,8 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
     <dt>
-    <a name = "LibClockTST.CONSTANTS.moon.phasesPercentage"></a>
-    <strong>LibClockTST.CONSTANTS.moon.phasesPercentage</strong>
+    <a name = "moon.phasesPercentage"></a>
+    <strong>moon.phasesPercentage</strong>
     </dt>
     <dd>
     Percentage until end of phase  from https://esoclock.uesp.net/
@@ -912,13 +745,154 @@ License:    GPL-<span class="number">3.0</span>
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="Local_Functions"></a>Local Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "CalculateTST"></a>
+    <strong>CalculateTST ([timestamp])</strong>
+    </dt>
+    <dd>
+    Get the lore time
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be the current time.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX timestamp in s
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        {hour, minute, second} table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CalculateTSTDate"></a>
+    <strong>CalculateTSTDate ([timestamp])</strong>
+    </dt>
+    <dd>
+    Get the lore date
+ If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ otherwise it will be calculated from the current time.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX timestamp in s
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        {era, year, month, day, weekDay} table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetCurrentPhaseName"></a>
+    <strong>GetCurrentPhaseName (phasePercentage)</strong>
+    </dt>
+    <dd>
+    Get the name of the current moon phase
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">phasePercentage</span>
+         percentage already pased in the current phase
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        current moon phase string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetSecondsUntilFullMoon"></a>
+    <strong>GetSecondsUntilFullMoon (phasePercentage)</strong>
+    </dt>
+    <dd>
+    Calculate the seconds until the moon is full again
+ returns 0 if the moon is already full
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">phasePercentage</span>
+         percentage already pased in the current phase
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number of seconds until the moon is full again
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CalculateMoon"></a>
+    <strong>CalculateMoon (timestamp)</strong>
+    </dt>
+    <dd>
+    Calculate the lore moon
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         UNIX to be calculated from
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <p> moon object { percentageOfPhaseDone, currentPhaseName, isWaxing,</p>
+
+<pre><code>  percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
+  secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
+</code></pre>
+
+    </ol>
+
+
+
+
+</dd>
+</dl>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-02-11 04:33:21 </i>
+<i style="float:right;">Last updated 2020-02-11 16:42:04 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

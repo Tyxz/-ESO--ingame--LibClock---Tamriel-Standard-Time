@@ -1,2 +1,2 @@
 language = "lua"
-run = "luarocks install busted --local && luarocks install luacheck --local && luarocks install luacov --local && luarocks install luacov-coveralls --local && luarocks install lua-discount --local && luarocks install ldoc --local && /home/runner/.luarocks/bin/luacheck . && /home/runner/.luarocks/bin/busted -R Test/Lib --verbose --coverage && /home/runner/.luarocks/bin/ldoc Lib -c ./config.ld"
+run = "make clean && make LUAROCKS=/home/runner/.luarocks/bin/ local"

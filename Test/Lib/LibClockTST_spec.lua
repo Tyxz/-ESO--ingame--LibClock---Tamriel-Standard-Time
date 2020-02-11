@@ -27,13 +27,42 @@ end)
 
 describe("LibClockTST", function()
     local TST = LibClockTST:Instance()
-    local const = LibClockTST.CONSTANTS
+    local const = LibClockTST.CONSTANTS()
 
     it("should create a custom object", function()
         local tDelay, tMoonDelay = 1, 2
         local tLib = LibClockTST:New(tDelay, tMoonDelay)
         assert.is.equal(tDelay, tLib.updateDelay)
         assert.is.equal(tMoonDelay, tLib.moonUpdateDelay)
+    end)
+
+    it("should create independed instances", function()
+        local tDelay1, tMoonDelay1 = 1, 2
+        local tDelay2, tMoonDelay2 = 3, 4
+        local tLib1 = LibClockTST:New(tDelay1, tMoonDelay1)
+        local tLib2 = LibClockTST:New(tDelay2, tMoonDelay2)
+        assert.is.equal(tDelay1, tLib1.updateDelay)
+        assert.is.equal(tDelay2, tLib2.updateDelay)
+    end)
+
+    it("functions only accessible from instance", function()
+        local tLib = LibClockTST:New(0,0)
+        assert.has_no.error(function() tLib:GetTime() end)
+        assert.has_error(function() LibClockTST:GetTime() end)
+    end)
+
+    describe("const", function()
+
+        it("should get constant table", function()
+            assert.is.equal("table", type(LibClockTST.CONSTANTS()))
+        end)
+
+        it("should be objects", function()
+            local tConst = LibClockTST.CONSTANTS()
+            tConst.time = 1
+            assert.are_not.same(tConst, LibClockTST.CONSTANTS())
+        end)
+
     end)
 
     describe("time", function()
