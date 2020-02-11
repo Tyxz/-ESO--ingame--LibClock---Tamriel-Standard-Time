@@ -9,5 +9,5 @@
 |   |   |
 |---|---|
 | Version: | 1.0.0 |  
-| Build for game version: | 100029 |
+| Build for game version: | 100030 |
 

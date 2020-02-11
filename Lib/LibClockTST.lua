@@ -1,10 +1,9 @@
---[[----------------------------------------
-    Location:   Lib/LibClockTST.lua
+--[[------------------------------------------------
+    Project:    LibClock - Tamriel Standard Time
     Author:     Arne Rantzen (Tyx)
     Created:    2020-01-20
-    Updated:    2020-01-22
     License:    GPL-3.0
-----------------------------------------]]--
+------------------------------------------------]]--
 ------------
 -- LibClock - Tamriel Standard Time
 -- Public functions to get information about the in-game time, date and moon
@@ -574,7 +573,7 @@ end
 -- @param addonId Id of the addon to be registered
 -- @param func function with a parameter for moon to be called
 -- @see LibClockTST:Register
--- @call moon = { percentageOfPhaseDone, currentPhaseName, isWaxing,
+-- @usage moon = { percentageOfPhaseDone, currentPhaseName, isWaxing,
 --      percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
 --      secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
  function Instance:RegisterForMoon(addonId, func)

@@ -19,7 +19,7 @@
 ## Author: |c0080ffTyx|r
 ## Version 1.0.0
 ## AddOnVersion: 0
-## APIVersion: 100029
+## APIVersion: 100029 100030
 ## IsLibrary: true
 
 ####################
