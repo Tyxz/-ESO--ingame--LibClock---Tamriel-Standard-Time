@@ -155,43 +155,37 @@ LibClockTST.CONSTANTS = const
 -- Calculation
 -- -----------------
 
-local lastCalculatedHour
-local needToUpdateDate = true
-local time
-local date
-local moon
-
--- Get the lore time
+--- Get the lore time
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 -- otherwise it will be the current time.
 -- @param[opt] timestamp UNIX timestamp in s
 -- @return {hour, minute, second} table
-local function CalculateLibClockTST(timestamp)
+function LibClockTST:CalculateTST(timestamp)
 	local timeSinceStart = timestamp - const.time.startTime
 	local secondsSinceMidnight = timeSinceStart % const.time.lengthOfDay
-	local LibClockTST = 24 * secondsSinceMidnight / const.time.lengthOfDay
+	local tst = 24 * secondsSinceMidnight / const.time.lengthOfDay
 
-	local h = math.floor(LibClockTST)
-	LibClockTST = (LibClockTST - h) * 60
-	local m = math.floor(LibClockTST)
-	LibClockTST = (LibClockTST - m) * 60
-	local s = math.floor(LibClockTST)
+	local h = math.floor(tst)
+	tst = (tst - h) * 60
+	local m = math.floor(tst)
+	tst = (tst - m) * 60
+	local s = math.floor(tst)
 
-	if h == 0 and h ~= lastCalculatedHour then
-		needToUpdateDate = true
+	if h == 0 and h ~= self.lastCalculatedHour then
+		self.needToUpdateDate = true
 	end
 
-	lastCalculatedHour = h
+	self.lastCalculatedHour = h
 
 	return { hour = h, minute = m, second = s }
 end
 
--- Get the lore date
+--- Get the lore date
 -- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 -- otherwise it will be calculated from the current time.
 -- @param[opt] timestamp UNIX timestamp in s
 -- @return {era, year, month, day, weekDay} table
-local function CalculateLibClockTSTDate(timestamp)
+function LibClockTST:CalculateTSTDate(timestamp)
 	local timeSinceStart = timestamp - const.date.startTime
 	local daysPast = math.floor(timeSinceStart / const.time.lengthOfDay)
 	local w = (daysPast + const.date.startWeekDay) % 7 + 1
@@ -206,25 +200,25 @@ local function CalculateLibClockTSTDate(timestamp)
 	end
 	local d = daysPast + 1
 
-	needToUpdateDate = false
+	self.needToUpdateDate = false
 
 	return {era = const.date.startEra, year = y, month = m, day = d, weekDay = w }
 end
 
--- Get the name of the current moon phase
+--- Get the name of the current moon phase
 -- @param phasePercentage percentage already pased in the current phase
 -- @return current moon phase string
-local function GetCurrentPhaseName(phasePercentage)
+function LibClockTST:GetCurrentPhaseName(phasePercentage)
 	for _, phase in ipairs(const.moon.phasesPercentage) do
 		if phasePercentage < phase.endPercentage then return phase.name end
 	end
 end
 
--- Calculate the seconds until the moon is full again
+--- Calculate the seconds until the moon is full again
 -- returns 0 if the moon is already full
 -- @param phasePercentage percentage already pased in the current phase
 -- @return number of seconds until the moon is full again
-local function GetSecondsUntilFullMoon(phasePercentage)
+function LibClockTST:GetSecondsUntilFullMoon(phasePercentage)
 	local secondsOffset = -phasePercentage * const.moon.phaseLengthInSeconds
 	if phasePercentage > const.moon.phasesPercentage[5].endPercentage then
 		secondsOffset = secondsOffset + const.moon.phaseLengthInSeconds
@@ -233,21 +227,21 @@ local function GetSecondsUntilFullMoon(phasePercentage)
 	return secondsUntilFull
 end
 
--- Calculate the lore moon
+--- Calculate the lore moon
 -- @param timestamp UNIX to be calculated from
 -- @return moon object { percentageOfPhaseDone, currentPhaseName, isWaxing,
 --      percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
 --      secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
-local function CalculateMoon(timestamp)
+function LibClockTST:CalculateMoon(timestamp)
 	local timeSinceStart = timestamp - const.moon.startTime
 	local secondsSinceNewMoon = timeSinceStart % const.moon.phaseLengthInSeconds
 	local phasePercentage = secondsSinceNewMoon / const.moon.phaseLengthInSeconds
 	local isWaxing = phasePercentage <= const.moon.phasesPercentage[4].endPercentage
-	local currentPhaseName = GetCurrentPhaseName(phasePercentage)
+	local currentPhaseName = self:GetCurrentPhaseName(phasePercentage)
 	local percentageOfNextPhase = phasePercentage % const.moon.phasesPercentageBetweenPhases
 	local secondsUntilNextPhase = percentageOfNextPhase * const.moon.singlePhaseLengthInSeconds
 	local daysUntilNextPhase = percentageOfNextPhase * const.moon.singlePhaseLength
-	local secondsUntilFullMoon = GetSecondsUntilFullMoon(phasePercentage)
+	local secondsUntilFullMoon = self:GetSecondsUntilFullMoon(phasePercentage)
 	local daysUntilFullMoon = secondsUntilFullMoon / const.time.lengthOfDay
     local percentageOfFullMoon
     if phasePercentage > 0.5 then
@@ -271,19 +265,21 @@ end
 
 -- Update the time with the current timestamp and store it in the time variable
 -- If neccessary, update the date and store in also
-local function Update()
+-- @param instance of LibClockTST
+local function Update(self)
 	local systemTime = GetTimeStamp()
-	time = CalculateLibClockTST(systemTime)
-	needToUpdateDate = true -- TODO: Remove
-	if needToUpdateDate then
-		date = CalculateLibClockTSTDate(systemTime)
+	self.time = self:CalculateTST(systemTime)
+	self.needToUpdateDate = true -- TODO: Remove
+	if self.needToUpdateDate then
+		self.date = self:CalculateTSTDate(systemTime)
 	end
 end
 
 -- Update the moon with the current timestamp and store it in the moon variable
-local function MoonUpdate()
+-- @param instance of LibClockTST
+local function MoonUpdate(self)
 	local systemTime = GetTimeStamp()
-	moon = CalculateMoon(systemTime)
+	self.moon = self:CalculateMoon(systemTime)
 end
 
 -- -----------------
@@ -317,8 +313,9 @@ local function CommandHandler(options)
 	if options[1] == "help" or #options > 2 then
 		PrintHelp()
 	else
+		local instance = LibClockTST:Instance()
 		local timestamp = GetTimeStamp()
-		local tNeedToUpdateDate = needToUpdateDate
+		local tNeedToUpdateDate = instance.needToUpdateDate
 		if #options == 2 then
 			if not IsTimestamp(options[2]) then
 				d("Please give only a 10 digit long timestamp as your seconds argument!")
@@ -328,15 +325,15 @@ local function CommandHandler(options)
 			end
 		end
 		if #options == 0 or options[1] == "time" then
-			d(CalculateLibClockTST(timestamp))
+			d(instance:CalculateTST(timestamp))
 		elseif options[1] == "date" then
-			d(CalculateLibClockTSTDate(timestamp))
+			d(instance:CalculateTSTDate(timestamp))
 		elseif options[1] == "moon" then
-			d(CalculateMoon(timestamp))
+			d(instance:CalculateMoon(timestamp))
 		else
 			PrintHelp()
 		end
-		needToUpdateDate = tNeedToUpdateDate
+		instance.needToUpdateDate = tNeedToUpdateDate
 	end
 end
 
@@ -360,36 +357,33 @@ end
 -- Initialize
 -- -----------------
 
-local dateListener = {}
-local moonListener = {}
-local timeListener = {}
-local listener = {}
-
 -- Event to update the time and date and its listeners
 local function OnUpdate()
-	Update()
-	assert(time, "Time object is empty")
-	assert(date, "Date object is empty")
+	local instance = LibClockTST:Instance()
+	Update(instance)
+	assert(instance.time, "Time object is empty")
+	assert(instance.date, "Date object is empty")
 
-	for _, f in pairs(listener) do
-		f(time, date)
+	for _, f in pairs(instance.listener) do
+		f(instance.time, instance.date)
 	end
 
-	for _, f in pairs(timeListener) do
-		f(time)
+	for _, f in pairs(instance.timeListener) do
+		f(instance.time)
 	end
 
-    for _, f in pairs(dateListener) do
-        f(date)
+    for _, f in pairs(instance.dateListener) do
+        f(instance.date)
     end
 end
 
 -- Event to update the moon and its listeners
 local function OnMoonUpdate()
-	MoonUpdate()
-	assert(moon, "Moon object is empty")
-	for _, f in pairs(moonListener) do
-		f(moon)
+	local instance = LibClockTST:Instance()
+	MoonUpdate(instance)
+	assert(instance.moon, "Moon object is empty")
+	for _, f in pairs(instance.moonListener) do
+		f(instance.moon)
 	end
 end
 
@@ -406,6 +400,7 @@ em:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
 -- -----------------
 -- Public
 -- -----------------
+local Instance
 
 --- Constructor
 -- Create a object to use custom delays between updates.
@@ -415,10 +410,27 @@ em:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
 -- @return LibClockTST object
 function LibClockTST:New(updateDelay, moonUpdateDelay)
     updateDelay = tonumber(updateDelay)
-    moonUpdateDelay = tonumber(moonUpdateDelay)
+	moonUpdateDelay = tonumber(moonUpdateDelay)
+	if updateDelay == nil and moonUpdateDelay == nil then
+		d("You want to call LibClockTST:Instance instead, if you don't need specific delays.")
+	end
+	self.dateListener = {}
+	self.moonListener = {}
+	self.timeListener = {}
+	self.listener = {}
+	self.needToUpdateDate = true
 	self.updateDelay = updateDelay or self.updateDelay
 	self.moonUpdateDelay = moonUpdateDelay or self.moonUpdateDelay
 	return self
+end
+
+--- Instace of library
+-- You can either get a singleton instance,
+-- or create your custom instance with your specific delays.
+-- @return LibClockTST object
+function LibClockTST:Instance()
+	Instance = Instance or LibClockTST:New(self.updateDelay, self.moonUpdateDelay)
+	return Instance
 end
 
 --- Get the lore time
@@ -430,13 +442,13 @@ function LibClockTST:GetTime(timestamp)
 	if timestamp then
         assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
         timestamp = tonumber(timestamp)
-		local tNeedToUpdateDate = needToUpdateDate
-		local t = CalculateLibClockTST(timestamp)
-		needToUpdateDate = tNeedToUpdateDate
+		local tNeedToUpdateDate = self.needToUpdateDate
+		local t = self:CalculateTST(timestamp)
+		self.needToUpdateDate = tNeedToUpdateDate
 		return t
 	else
-		Update()
-		return time
+		Update(self)
+		return self.time
 	end
 end
 
@@ -449,13 +461,13 @@ function LibClockTST:GetDate(timestamp)
 	if timestamp then
         assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
         timestamp = tonumber(timestamp)
-		local tNeedToUpdateDate = needToUpdateDate
-		local d = CalculateLibClockTSTDate(timestamp)
-		needToUpdateDate = tNeedToUpdateDate
+		local tNeedToUpdateDate = self.needToUpdateDate
+		local d = self:CalculateTSTDate(timestamp)
+		self.needToUpdateDate = tNeedToUpdateDate
 		return d
 	else
-		Update()
-		return date
+		Update(self)
+		return self.date
 	end
 end
 
@@ -470,10 +482,10 @@ function LibClockTST:GetMoon(timestamp)
 	if timestamp then
         assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
         timestamp = tonumber(timestamp)
-		return CalculateMoon(timestamp)
+		return self:CalculateMoon(timestamp)
 	else
-		MoonUpdate()
-		return moon
+		MoonUpdate(self)
+		return self.moon
 	end
 end
 
@@ -483,8 +495,8 @@ end
 function LibClockTST:Register(addonId, func)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 	assert(func, "Please provide a function: func(time, date) to be called every second for a time update.")
-	assert(not listener[addonId], addonId .. " already subscribes.")
-	listener[addonId] = func
+	assert(not self.listener[addonId], addonId .. " already subscribes.")
+	self.listener[addonId] = func
 	em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 end
 
@@ -493,9 +505,9 @@ end
 -- @param addonId Id of the addon previous registered
 function LibClockTST:CancelSubscription(addonId)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
-	assert(listener[addonId], "Subscription could not be found.")
-	listener[addonId] = nil
-	if #listener == 0 then
+	assert(self.listener[addonId], "Subscription could not be found.")
+	self.listener[addonId] = nil
+	if #self.listener == 0 then
 		em:UnregisterForUpdate(eventHandle)
 	end
 end
@@ -507,8 +519,8 @@ end
 function LibClockTST:RegisterForTime(addonId, func)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 	assert(func, "Please provide a function: func(time) to be called every second for a time update.")
-	assert(not timeListener[addonId], addonId .. " already subscribes.")
-	timeListener[addonId] = func
+	assert(not self.timeListener[addonId], addonId .. " already subscribes.")
+	self.timeListener[addonId] = func
 	em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 end
 
@@ -517,9 +529,9 @@ end
 -- @see LibClockTST:CancelSubscription
 function LibClockTST:CancelSubscriptionForTime(addonId)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
-	assert(timeListener[addonId], "Subscription could not be found.")
-	timeListener[addonId] = nil
-	if #timeListener == 0 then
+	assert(self.timeListener[addonId], "Subscription could not be found.")
+	self.timeListener[addonId] = nil
+	if #self.timeListener == 0 then
 		em:UnregisterForUpdate(eventHandle.."-Time")
 	end
 end
@@ -531,8 +543,8 @@ end
 function LibClockTST:RegisterForDate(addonId, func)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 	assert(func, "Please provide a function: func(date) to be called every second for a time update.")
-	assert(not dateListener[addonId], addonId .. " already subscribes.")
-	dateListener[addonId] = func
+	assert(not self.dateListener[addonId], addonId .. " already subscribes.")
+	self.dateListener[addonId] = func
 	em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 end
 
@@ -541,9 +553,9 @@ end
 -- @see LibClockTST:CancelSubscription
 function LibClockTST:CancelSubscriptionForDate(addonId)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
-	assert(dateListener[addonId], "Subscription could not be found.")
-	dateListener[addonId] = nil
-	if #dateListener == 0 then
+	assert(self.dateListener[addonId], "Subscription could not be found.")
+	self.dateListener[addonId] = nil
+	if #self.dateListener == 0 then
 		em:UnregisterForUpdate(eventHandle.."-Date")
 	end
 end
@@ -552,16 +564,19 @@ end
 -- @param addonId Id of the addon to be registered
 -- @param func function with a parameter for moon to be called
 -- @see LibClockTST:Register
+-- @call moon = { percentageOfPhaseDone, currentPhaseName, isWaxing,
+--      percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
+--      secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
 function LibClockTST:RegisterForMoon(addonId, func)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 	assert(func, "Please provide a function: func(moon) to be called every second for a time update.")
-	assert(not moonListener[addonId], addonId .. " already subscribes.")
-	moonListener[addonId] = func
+	assert(not self.moonListener[addonId], addonId .. " already subscribes.")
+	self.moonListener[addonId] = func
 	em:RegisterForUpdate(eventHandle.."-Moon", self.moonUpdateDelay, OnMoonUpdate) -- once per hour should be enough
 
 	-- Update once
-	MoonUpdate()
-	func(moon)
+	MoonUpdate(self)
+	func(self.moon)
 end
 
 --- Cancel a subscription for the moon updates.
@@ -569,9 +584,9 @@ end
 -- @see LibClockTST:CancelSubscription
 function LibClockTST:CancelSubscriptionForMoon(addonId)
 	assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
-	assert(moonListener[addonId], "Subscription could not be found.")
-	moonListener[addonId] = nil
-	if #moonListener == 0  then
+	assert(self.moonListener[addonId], "Subscription could not be found.")
+	self.moonListener[addonId] = nil
+	if #self.moonListener == 0  then
 		em:UnregisterForUpdate(eventHandle.."-Moon")
 	end
 end
