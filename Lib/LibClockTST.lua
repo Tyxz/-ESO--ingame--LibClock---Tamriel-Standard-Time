@@ -108,17 +108,17 @@ function LibClockTST.CONSTANTS()
 			endPercentage = 0.31,
 		}, -- first quarter moon phase
 		[4] = {
-			name = "waxingGibbonus",
+			name = "waxingGibbous",
 			endPercentage = 0.435,
-		}, -- waxing gibbonus moon phase
+		}, -- waxing gibbous moon phase
 		[5] = {
 			name = "full",
 			endPercentage = 0.56,
 		}, -- full moon phase
 		[6] = {
-			name = "waningGibbonus",
+			name = "waningGibbous",
 			endPercentage = 0.685,
-		}, -- waning gibbonus moon phase
+		}, -- waning gibbous moon phase
 		[7] = {
 			name = "thirdQuarter",
 			endPercentage = 0.81,
