@@ -2,7 +2,7 @@
     Location:   Lib/LibClockTST.lua
     Author:     Arne Rantzen (Tyx)
     Created:    2020-01-20
-    Updated:    2020-01-22
+    Updated:    2020-02-11
     License:    GPL-3.0
 ----------------------------------------]]--
 ------------
@@ -361,6 +361,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 		local secondsSinceNewMoon = timeSinceStart % const.moon.phaseLengthInSeconds
 		local phasePercentage = secondsSinceNewMoon / const.moon.phaseLengthInSeconds
 		local isWaxing = phasePercentage <= const.moon.phasesPercentage[4].endPercentage
+		local isFull = not isWaxing and phasePercentage <= const.moon.phasesPercentage[5].endPercentage
 		local currentPhaseName = GetCurrentPhaseName(phasePercentage)
 		local percentageOfNextPhase = phasePercentage % const.moon.phasesPercentageBetweenPhases
 		local secondsUntilNextPhase = percentageOfNextPhase * const.moon.singlePhaseLengthInSeconds
@@ -378,6 +379,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 			percentageOfPhaseDone = phasePercentage,
 			currentPhaseName = currentPhaseName,
 			isWaxing = isWaxing,
+			isFull = isFull,
 			percentageOfCurrentPhaseDone = percentageOfNextPhase,
 			secondsUntilNextPhase = secondsUntilNextPhase,
 			daysUntilNextPhase = daysUntilNextPhase,
@@ -440,10 +442,10 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- -----------------
 
 	--- Get the lore time
-	-- If a parameter is given, the lore date of the UNIX timestamp will be returned,
+	-- If a parameter is given, the lore time of the UNIX timestamp will be returned,
 	-- otherwise it will be the current time.
 	-- @param[opt] timestamp UNIX timestamp in s
-	-- @return date object {era, year, month, day, weekDay}
+	-- @return time object {hour, minute, second}
 	function LibClockTST:GetTime(timestamp)
 		if timestamp then
 			assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
