@@ -92,15 +92,51 @@ describe("LibClockTST", function()
     end)
 
     describe("moon", function()
+        describe("instance with count full moon as cycle", function()
+            local iTST = LibClockTST:Instance()
+            it("should calculate moon", function()
+                assert.truthy(iTST:GetMoon())
+            end)
 
-        it("should calculate moon", function()
-            assert.truthy(TST:GetMoon())
+            it("should calculate moon to be 51% full and first quarter", function()
+                local time = 1579645663
+                local moon = iTST:GetMoon(time)
+                assert.are.same({
+                    math.floor(moon.percentageOfFullMoon*100),
+                    moon.currentPhaseName}, {57, "firstQuarter"})
+            end)
+            it("should ne smooth if full moon phase is counted as full", function()
+                local time = os.time(os.date("!*t"))
+                local lastPercentage = iTST:GetMoon(time).percentageOfFullMoon
+                for i=time, time + 628650, 3000 do
+                    local moon = iTST:GetMoon(i)
+                    assert.is_true(math.abs(lastPercentage - moon.percentageOfFullMoon) < .05)
+                    lastPercentage = moon.percentageOfFullMoon
+                end
+            end)
         end)
+        describe("new without count full moon as cycle", function()
+            local nTST = LibClockTST:New(200, 3600000, false)
+            it("should calculate moon", function()
+                assert.truthy(nTST:GetMoon())
+            end)
 
-        it("should calculate moon to be 51% full and first quarter", function()
-            local time = 1579645663
-            local moon = TST:GetMoon(time)
-            assert.are.same({ math.floor(moon.percentageOfFullMoon*100), moon.currentPhaseName}, {51, "firstQuarter"})
+            it("should calculate moon to be 51% full and first quarter", function()
+                local time = 1579645663
+                local moon = nTST:GetMoon(time)
+                assert.are.same({
+                    math.floor(moon.percentageOfFullMoon*100),
+                    moon.currentPhaseName}, {51, "firstQuarter"})
+            end)
+            it("should be smooth if only full moon is counted as full", function()
+                local time = os.time(os.date("!*t"))
+                local lastPercentage = nTST:GetMoon(time).percentageOfFullMoon
+                for i=time, time + 628650, 3000 do
+                    local moon = nTST:GetMoon(i)
+                    assert.is_true(math.abs(lastPercentage - moon.percentageOfFullMoon) < .05)
+                    lastPercentage = moon.percentageOfFullMoon
+                end
+            end)
         end)
     end)
 

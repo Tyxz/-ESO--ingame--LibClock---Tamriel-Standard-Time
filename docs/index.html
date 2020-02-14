@@ -53,7 +53,7 @@
 <pre>
 Author:     Arne Rantzen (Tyx)
 Created:    <span class="number">2020</span>&ndash;<span class="number">01</span>&ndash;<span class="number">20</span>
-Updated:    <span class="number">2020</span>&ndash;<span class="number">01</span>&ndash;<span class="number">22</span>
+Updated:    <span class="number">2020</span>&ndash;<span class="number">02</span>&ndash;<span class="number">11</span>
 License:    GPL-<span class="number">3.0</span>
 </pre>
  LibClock &ndash; Tamriel Standard Time
@@ -65,20 +65,20 @@ License:    GPL-<span class="number">3.0</span>
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Instance">Instance (super)</a></td>
+	<td class="name" nowrap><a href="#Instance">Instance ([super])</a></td>
 	<td class="summary">Instance of library
  You can either get a singleton instance,
  or create your custom instance with your specific delays.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#New">New ([updateDelay[, moonUpdateDelay]])</a></td>
+	<td class="name" nowrap><a href="#New">New (updateDelay, moonUpdateDelay[, countFullPhaseAsFull[, super]])</a></td>
 	<td class="summary">Constructor
  Create a object to use custom delays between updates.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#GetTime">GetTime ([timestamp])</a></td>
 	<td class="summary">Get the lore time
- If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ If a parameter is given, the lore time of the UNIX timestamp will be returned,
  otherwise it will be the current time.</td>
 	</tr>
 	<tr>
@@ -193,7 +193,7 @@ License:    GPL-<span class="number">3.0</span>
     <dl class="function">
     <dt>
     <a name = "Instance"></a>
-    <strong>Instance (super)</strong>
+    <strong>Instance ([super])</strong>
     </dt>
     <dd>
     Instance of library
@@ -204,8 +204,8 @@ License:    GPL-<span class="number">3.0</span>
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">super</span>
-
-
+         is the parent class it should take its values from.
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -221,7 +221,7 @@ License:    GPL-<span class="number">3.0</span>
 </dd>
     <dt>
     <a name = "New"></a>
-    <strong>New ([updateDelay[, moonUpdateDelay]])</strong>
+    <strong>New (updateDelay, moonUpdateDelay[, countFullPhaseAsFull[, super]])</strong>
     </dt>
     <dd>
     Constructor
@@ -233,10 +233,17 @@ License:    GPL-<span class="number">3.0</span>
     <ul>
         <li><span class="parameter">updateDelay</span>
          delays between two updates in ms to calculate the time and date
-         (<em>optional</em>)
         </li>
         <li><span class="parameter">moonUpdateDelay</span>
          delays between two updates in ms to calculate the moon
+        </li>
+        <li><span class="parameter">countFullPhaseAsFull</span>
+         is default false.
+ It decides, if the whole full moon phase is counted as full (100%) or the phase is treated as any other.
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">super</span>
+         is the parent class it should take its values from.
          (<em>optional</em>)
         </li>
     </ul>
@@ -257,7 +264,7 @@ License:    GPL-<span class="number">3.0</span>
     </dt>
     <dd>
     Get the lore time
- If a parameter is given, the lore date of the UNIX timestamp will be returned,
+ If a parameter is given, the lore time of the UNIX timestamp will be returned,
  otherwise it will be the current time.
 
 
@@ -272,10 +279,18 @@ License:    GPL-<span class="number">3.0</span>
     <h3>Returns:</h3>
     <ol>
 
-        date object {era, year, month, day, weekDay}
+        <p>time table</p>
+
+<pre><code>    { hour, minute, second }
+</code></pre>
+
     </ol>
 
 
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#CalculateTST">CalculateTST</a>
+    </ul>
 
 
 </dd>
@@ -300,10 +315,18 @@ License:    GPL-<span class="number">3.0</span>
     <h3>Returns:</h3>
     <ol>
 
-        date object {era, year, month, day, weekDay}
+        <p>date table</p>
+
+<pre><code>    { era, year, month, day, weekDay }
+</code></pre>
+
     </ol>
 
 
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#CalculateTSTDate">CalculateTSTDate</a>
+    </ul>
 
 
 </dd>
@@ -328,15 +351,20 @@ License:    GPL-<span class="number">3.0</span>
     <h3>Returns:</h3>
     <ol>
 
-        <p> moon object { phasePercentage, currentPhaseName, isWaxing,</p>
+        <p> moon table</p>
 
-<pre><code>  percentageOfNextPhase, secondsUntilNextPhase, daysUntilNextPhase,
-  secondsUntilFullMoon, daysUntilFullMoon }
+<pre><code>    { percentageOfPhaseDone, currentPhaseName, isWaxing, isFull,
+  percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
+  secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
 </code></pre>
 
     </ol>
 
 
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#CalculateMoon">CalculateMoon</a>
+    </ul>
 
 
 </dd>
@@ -360,6 +388,11 @@ License:    GPL-<span class="number">3.0</span>
 
 
 
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#GetTime">GetTime</a></li>
+         <li><a href="index.html#GetDate">GetDate</a></li>
+    </ul>
 
 
 </dd>
@@ -406,7 +439,8 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Register">LibClockTST:Register</a>
+         <li><a href="index.html#Register">LibClockTST:Register</a></li>
+         <li><a href="index.html#GetTime">GetTime</a></li>
     </ul>
 
 
@@ -457,7 +491,8 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Register">LibClockTST:Register</a>
+         <li><a href="index.html#Register">LibClockTST:Register</a></li>
+         <li><a href="index.html#GetDate">GetDate</a></li>
     </ul>
 
 
@@ -508,7 +543,8 @@ License:    GPL-<span class="number">3.0</span>
 
     <h3>See also:</h3>
     <ul>
-         <a href="index.html#Register">LibClockTST:Register</a>
+         <li><a href="index.html#Register">LibClockTST:Register</a></li>
+         <li><a href="index.html#GetMoon">GetMoon</a></li>
     </ul>
 
 
@@ -769,7 +805,11 @@ License:    GPL-<span class="number">3.0</span>
     <h3>Returns:</h3>
     <ol>
 
-        {hour, minute, second} table
+        <p>time table</p>
+
+<pre><code>    { hour, minute, second }
+</code></pre>
+
     </ol>
 
 
@@ -797,7 +837,11 @@ License:    GPL-<span class="number">3.0</span>
     <h3>Returns:</h3>
     <ol>
 
-        {era, year, month, day, weekDay} table
+        <p>date table</p>
+
+<pre><code>    { era, year, month, day, weekDay }
+</code></pre>
+
     </ol>
 
 
@@ -873,9 +917,10 @@ License:    GPL-<span class="number">3.0</span>
     <h3>Returns:</h3>
     <ol>
 
-        <p> moon object { percentageOfPhaseDone, currentPhaseName, isWaxing,</p>
+        <p> moon table</p>
 
-<pre><code>  percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
+<pre><code>    { percentageOfPhaseDone, currentPhaseName, isWaxing, isFull,
+  percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
   secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
 </code></pre>
 
@@ -892,7 +937,7 @@ License:    GPL-<span class="number">3.0</span>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-02-11 16:42:04 </i>
+<i style="float:right;">Last updated 2020-02-14 14:33:37 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -143,18 +143,16 @@ end
 --- Instance of library
 -- You can either get a singleton instance,
 -- or create your custom instance with your specific delays.
+-- @param[opt] super is the parent class it should take its values from.
 -- @return LibClockTST object
 function LibClockTST:Instance(super)
 	if self._instance then
 		return self._instance
 	end
 
-	local updateDelay = 200
-	local moonUpdateDelay = 36000000
-
 	self._instance = setmetatable(
         {},
-        LibClockTST:New(updateDelay, moonUpdateDelay, super)
+        LibClockTST:New(200, 36000000, true, super)
     )
 	if self._instance.ctor then
 		self._instance:ctor()
@@ -248,10 +246,13 @@ end
 --- Constructor
 -- Create a object to use custom delays between updates.
 -- Warning: Could lead to performance issues if you overdue this!
--- @param[opt] updateDelay delays between two updates in ms to calculate the time and date
--- @param[opt] moonUpdateDelay delays between two updates in ms to calculate the moon
+-- @param updateDelay delays between two updates in ms to calculate the time and date
+-- @param moonUpdateDelay delays between two updates in ms to calculate the moon
+-- @param[opt] countFullPhaseAsFull is default false.
+-- It decides, if the whole full moon phase is counted as full (100%) or the phase is treated as any other.
+-- @param[opt] super is the parent class it should take its values from.
 -- @return LibClockTST object
-function LibClockTST:New(updateDelay, moonUpdateDelay, super)
+function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, super)
     local const = LibClockTST.CONSTANTS()
 	local LibClockTST = {}
 	LibClockTST.__index = LibClockTST
@@ -273,6 +274,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	LibClockTST.needToUpdateDate = true
 	LibClockTST.updateDelay = tonumber(updateDelay)
 	LibClockTST.moonUpdateDelay = tonumber(moonUpdateDelay)
+	LibClockTST.countFullPhaseAsFull = countFullPhaseAsFull or false
 
 	-- -----------------
 	-- Calculation
@@ -282,7 +284,8 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 	-- otherwise it will be the current time.
 	-- @param[opt] timestamp UNIX timestamp in s
-	-- @return {hour, minute, second} table
+	-- @return time table
+	--		{ hour, minute, second }
 	local function CalculateTST(timestamp)
 		local timeSinceStart = timestamp - const.time.startTime
 		local secondsSinceMidnight = timeSinceStart % const.time.lengthOfDay
@@ -307,7 +310,8 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 	-- otherwise it will be calculated from the current time.
 	-- @param[opt] timestamp UNIX timestamp in s
-	-- @return {era, year, month, day, weekDay} table
+	-- @return date table
+	--		{ era, year, month, day, weekDay }
 	local function CalculateTSTDate(timestamp)
 		local timeSinceStart = timestamp - const.date.startTime
 		local daysPast = math.floor(timeSinceStart / const.time.lengthOfDay)
@@ -353,7 +357,8 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 
 	--- Calculate the lore moon
 	-- @param timestamp UNIX to be calculated from
-	-- @return moon object { percentageOfPhaseDone, currentPhaseName, isWaxing,
+	-- @return moon table
+	--		{ percentageOfPhaseDone, currentPhaseName, isWaxing, isFull,
 	--      percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
 	--      secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
 	local function CalculateMoon(timestamp)
@@ -369,10 +374,23 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 		local secondsUntilFullMoon = GetSecondsUntilFullMoon(phasePercentage)
 		local daysUntilFullMoon = secondsUntilFullMoon / const.time.lengthOfDay
 		local percentageOfFullMoon
-		if phasePercentage > 0.5 then
-			percentageOfFullMoon = 1 - (phasePercentage - 0.5) * 2
+		if LibClockTST.countFullPhaseAsFull then
+			if phasePercentage < const.moon.phasesPercentage[4].endPercentage then
+				percentageOfFullMoon = phasePercentage * 2
+			elseif phasePercentage < const.moon.phasesPercentage[5].endPercentage then
+				percentageOfFullMoon = 1
+			else
+				percentageOfFullMoon = 1 - (phasePercentage - 0.5) * 2
+			end
+
+			percentageOfFullMoon = math.min(1,
+					percentageOfFullMoon + percentageOfFullMoon * const.moon.phasesPercentageBetweenPhases)
 		else
-			percentageOfFullMoon = phasePercentage * 2
+			if phasePercentage < 0.5 then
+				percentageOfFullMoon = phasePercentage * 2
+			else
+				percentageOfFullMoon = 1 - (phasePercentage - 0.5) * 2
+			end
 		end
 
 		return {
@@ -445,7 +463,9 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- If a parameter is given, the lore time of the UNIX timestamp will be returned,
 	-- otherwise it will be the current time.
 	-- @param[opt] timestamp UNIX timestamp in s
-	-- @return time object {hour, minute, second}
+	-- @return time table
+	--		{ hour, minute, second }
+	-- @see CalculateTST
 	function LibClockTST:GetTime(timestamp)
 		if timestamp then
 			assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
@@ -464,7 +484,9 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- If a parameter is given, the lore date of the UNIX timestamp will be returned,
 	-- otherwise it will be calculated from the current time.
 	-- @param[opt] timestamp UNIX timestamp in s
-	-- @return date object {era, year, month, day, weekDay}
+	-- @return date table
+	-- 		{ era, year, month, day, weekDay }
+	-- @see CalculateTSTDate
 	function LibClockTST:GetDate(timestamp)
 		if timestamp then
 			assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
@@ -483,9 +505,11 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- If a parameter is given, the lore moon of the UNIX timestamp will be returned,
 	-- otherwise it will be calculated from the current time.
 	-- @param[opt] timestamp UNIX timestamp in s
-	-- @return moon object { phasePercentage, currentPhaseName, isWaxing,
-	--      percentageOfNextPhase, secondsUntilNextPhase, daysUntilNextPhase,
-	--      secondsUntilFullMoon, daysUntilFullMoon }
+	-- @return moon table
+	--		{ percentageOfPhaseDone, currentPhaseName, isWaxing, isFull,
+	--      percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
+	--      secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
+	-- @see CalculateMoon
 	function LibClockTST:GetMoon(timestamp)
 		if timestamp then
 			assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
@@ -500,6 +524,8 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	--- Register an addon to subscribe to date and time updates.
 	-- @param addonId Id of the addon to be registered
 	-- @param func function with two parameters for time and date to be called
+	-- @see GetTime
+	-- @see GetDate
 	function LibClockTST:Register(addonId, func)
 		assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 		assert(func, "Please provide a function: func(time, date) to be called every second for a time update.")
@@ -524,6 +550,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- @param addonId Id of the addon to be registered
 	-- @param func function with a parameter for time to be called
 	-- @see LibClockTST:Register
+	-- @see GetTime
 	function LibClockTST:RegisterForTime(addonId, func)
 		assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 		assert(func, "Please provide a function: func(time) to be called every second for a time update.")
@@ -548,6 +575,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- @param addonId Id of the addon to be registered
 	-- @param func function with a parameter for date to be called
 	-- @see LibClockTST:Register
+	-- @see GetDate
 	function LibClockTST:RegisterForDate(addonId, func)
 		assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 		assert(func, "Please provide a function: func(date) to be called every second for a time update.")
@@ -572,9 +600,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, super)
 	-- @param addonId Id of the addon to be registered
 	-- @param func function with a parameter for moon to be called
 	-- @see LibClockTST:Register
-	-- @call moon = { percentageOfPhaseDone, currentPhaseName, isWaxing,
-	--      percentageOfCurrentPhaseDone, secondsUntilNextPhase, daysUntilNextPhase,
-	--      secondsUntilFullMoon, daysUntilFullMoon, percentageOfFullMoon }
+	-- @see GetMoon
 	function LibClockTST:RegisterForMoon(addonId, func)
 		assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
 		assert(func, "Please provide a function: func(moon) to be called every second for a time update.")
