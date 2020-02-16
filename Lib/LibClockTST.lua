@@ -1,8 +1,8 @@
 --[[----------------------------------------
-    Location:   Lib/LibClockTST.lua
+    Project:  	LibClockTST
     Author:     Arne Rantzen (Tyx)
     Created:    2020-01-20
-    Updated:    2020-02-11
+    Updated:    2020-02-16
     License:    GPL-3.0
 ----------------------------------------]]--
 ------------
@@ -134,7 +134,7 @@ end
 -- @param timestamp object to be checked
 -- @return bool if it matches the condition
 function LibClockTST.IsTimestamp(timestamp)
-    timestamp = math.floor(tonumber(timestamp))
+    timestamp = math.floor(tonumber(timestamp) or 0)
     return string.match(tostring(timestamp), "^%d%d%d%d%d%d%d%d%d%d$") ~= nil
 end
 
