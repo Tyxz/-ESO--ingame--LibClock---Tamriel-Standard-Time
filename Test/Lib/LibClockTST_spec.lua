@@ -36,7 +36,7 @@ describe("LibClockTST", function()
         assert.is.equal(tMoonDelay, tLib.moonUpdateDelay)
     end)
 
-    it("should create independed instances", function()
+    it("should create independent instances", function()
         local tDelay1, tMoonDelay1 = 1, 2
         local tDelay2, tMoonDelay2 = 3, 4
         local tLib1 = LibClockTST:New(tDelay1, tMoonDelay1)
@@ -45,7 +45,13 @@ describe("LibClockTST", function()
         assert.is.equal(tDelay2, tLib2.updateDelay)
     end)
 
-    it("functions only accessible from instance", function()
+    it("should reference instance", function()
+        local tInstance1 = LibClockTST:Instance()
+        local tInstance2 = LibClockTST:Instance()
+        assert.is.equal(tInstance1, tInstance2)
+    end)
+
+    it("should throw error if functions are directly accessed", function()
         local tLib = LibClockTST:New(0,0)
         assert.has_no.error(function() tLib:GetTime() end)
         assert.has_error(function() LibClockTST:GetTime() end)
@@ -229,12 +235,6 @@ describe("LibClockTST", function()
         describe("error", function()
 
             describe("register", function()
-
-                it("should throw error if subscribing multiple times with same handle", function()
-                    TST:Register(subscription, f)
-                    assert.has_error(function() TST:Register(subscription, f) end)
-                    TST:CancelSubscription(subscription)
-                end)
 
                 it("should throw error if subscribing without handle", function()
                     assert.has_error(function() TST:Register(nil, f) end)

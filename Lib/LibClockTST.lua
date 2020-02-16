@@ -13,25 +13,7 @@
 ----
 
 LibClockTST = {}
-
--- -----------------
--- Utility
--- -----------------
-
--- Check if string is nil or empty
--- @param obj string to be checked
--- @return bool if it is not nil or empty
-local function IsNotNilOrEmpty(obj)
-    return obj ~= nil and string.match(tostring(obj), "^%s*$") == nil
-end
-
--- Check if input is a timestamp
--- @param timestamp object to be checked
--- @return bool if it matches the condition
-local function IsTimestamp(timestamp)
-    timestamp = math.floor(tonumber(timestamp))
-    return string.match(tostring(timestamp), "^%d%d%d%d%d%d%d%d%d%d$") ~= nil
-end
+LibClockTST.__index = LibClockTST
 
 -- -----------------
 -- Constants
@@ -65,6 +47,7 @@ function LibClockTST.CONSTANTS()
 		startYear = 582, -- offset in years, because the game starts in 2E 582
 		startEra = 2, -- era the world is in
 		yearLength = 365, -- length of the in-game year in days
+		leaps = 141, -- number of leaps in this era, assuming, that year 2E4 and 2E400 are leap years
 	}
 
 	--- Different length of month within the year in days
@@ -85,12 +68,12 @@ function LibClockTST.CONSTANTS()
 
 	--- Constant information to calculate the moon position
 	local moon = {
-			startTime = 1436153095, -- start time calculated from https://esoclock.uesp.net/ values to be new moon
-			phaseLength = 30, -- ingame days
-			phaseLengthInSeconds = 628650, -- in s, phaseLength * dayLength
-			singlePhaseLength = 3.75, -- in ingame days
-			singlePhaseLengthInSeconds = 78581.25, -- in s, singlePhaseLength * dayLength
-			phasesPercentageBetweenPhases = 0.125, -- length in percentage of whole phase of each single phase
+		startTime = 1436153095, -- start time calculated from https://esoclock.uesp.net/ values to be new moon
+		phaseLength = 30, -- ingame days
+		phaseLengthInSeconds = 628650, -- in s, phaseLength * dayLength
+		singlePhaseLength = 3.75, -- in ingame days
+		singlePhaseLengthInSeconds = 78581.25, -- in s, singlePhaseLength * dayLength
+		phasesPercentageBetweenPhases = 0.125, -- length in percentage of whole phase of each single phase
 	}
 
 	--- Percentage until end of phase  from https://esoclock.uesp.net/
@@ -130,10 +113,60 @@ function LibClockTST.CONSTANTS()
 	}
 
 	return {
-        time = time,
-        date = date,
-        moon = moon
-    }
+		time = time,
+		date = date,
+		moon = moon
+	}
+end
+
+-- -----------------
+-- Utility
+-- -----------------
+
+--- Check if string is nil or empty
+-- @param obj string to be checked
+-- @return bool if it is not nil or empty
+function LibClockTST.IsNotNilOrEmpty(obj)
+    return obj ~= nil and string.match(tostring(obj), "^%s*$") == nil
+end
+
+--- Check if input is a timestamp
+-- @param timestamp object to be checked
+-- @return bool if it matches the condition
+function LibClockTST.IsTimestamp(timestamp)
+    timestamp = math.floor(tonumber(timestamp))
+    return string.match(tostring(timestamp), "^%d%d%d%d%d%d%d%d%d%d$") ~= nil
+end
+
+--- Test if the current year is a leap year
+--@param year has to be an integer with the full year length
+--@return bool if year is a leap year
+function LibClockTST.IsLeapYear(year)
+	return year % 4 == 0 and (year % 100 ~= 0 or year % 400 == 0)
+end
+
+--- Calculate the week day based on a given year, month and day
+-- https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Gauss's_algorithm
+--@param table like {year = 2020, month = 2, day = 16}
+--@return week day as a number from 1 (Monday) to 7 (Sunday)
+function LibClockTST.GetWeekDay(table)
+	assert(
+			type(table.year) == "number" and type(table.month) == "number" and type(table.day) == "number",
+			"Please provide a table like {year = 2020, month = 2, number = 16}"
+	)
+
+	-- Calculate
+	--@param year has to be an integer with the full year length
+	--@return number of leaps since year 0
+	local function GetDaysFromZero(y)
+		local leaps = math.floor(y / 4) - math.floor( y / 100) + math.floor(y / 400)
+		return 365 * y + leaps
+	end
+
+	local mm = (table.month % 12 + 9) % 12 -- End is February (11), start is March (0)
+	local dd = GetDaysFromZero(table.year + math.floor(table.month / 12) - math.floor(mm / 10))
+	local totalDays = dd + math.floor(( mm * 306 + 5) / 10) + table.day - 307
+	return totalDays % 7 + 1 -- shift Monday to 1st and Sunday to 7th
 end
 
 -- -----------------
@@ -143,17 +176,13 @@ end
 --- Instance of library
 -- You can either get a singleton instance,
 -- or create your custom instance with your specific delays.
--- @param[opt] super is the parent class it should take its values from.
 -- @return LibClockTST object
-function LibClockTST:Instance(super)
+function LibClockTST:Instance()
 	if self._instance then
 		return self._instance
 	end
 
-	self._instance = setmetatable(
-        {},
-        LibClockTST:New(200, 36000000, true, super)
-    )
+	self._instance = LibClockTST:New(200, 36000000, true)
 	if self._instance.ctor then
 		self._instance:ctor()
 	end
@@ -191,7 +220,7 @@ function LibClockTST:Instance(super)
 			local timestamp = GetTimeStamp()
 			local tNeedToUpdateDate = self._instance.needToUpdateDate
 			if #options == 2 then
-				if not IsTimestamp(options[2]) then
+				if not LibClockTST.IsTimestamp(options[2]) then
 					d("Please give only a 10 digit long timestamp as your seconds argument!")
 					return
 				else
@@ -250,13 +279,13 @@ end
 -- @param moonUpdateDelay delays between two updates in ms to calculate the moon
 -- @param[opt] countFullPhaseAsFull is default false.
 -- It decides, if the whole full moon phase is counted as full (100%) or the phase is treated as any other.
--- @param[opt] super is the parent class it should take its values from.
 -- @return LibClockTST object
-function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, super)
+function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull)
     local const = LibClockTST.CONSTANTS()
 	local LibClockTST = {}
+
+	setmetatable(LibClockTST, _G.LibClockTST)
 	LibClockTST.__index = LibClockTST
-	setmetatable(LibClockTST, super)
 
 	-- -----------------
 	-- Initialize
@@ -315,16 +344,38 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	local function CalculateTSTDate(timestamp)
 		local timeSinceStart = timestamp - const.date.startTime
 		local daysPast = math.floor(timeSinceStart / const.time.lengthOfDay)
+
+		-- Week day
 		local w = (daysPast + const.date.startWeekDay) % 7 + 1
 
-		local y = math.floor(daysPast / const.date.yearLength)
-		daysPast = daysPast - y * const.date.yearLength
-		y = y + const.date.startYear
+		-- Year
+		local yearsSinceStart = math.floor(daysPast / const.date.yearLength)
+		local y = yearsSinceStart + const.date.startYear
+
+		-- Leap day
+		-- Every fourth year if it can not be divided by 100 or can be divided by 400 is a leap year
+		local ly = y - 1
+		local leapsSinceStart = math.floor(ly / 4)
+				- math.floor(ly / 100) + math.floor(ly / 400) - const.date.leaps
+
+		-- Year and leap adjustment
+		daysPast = daysPast - yearsSinceStart * const.date.yearLength - leapsSinceStart
+		while daysPast < 0 do
+			y = y - 1
+			daysPast = daysPast + const.date.yearLength
+		end
+
+		-- Month
 		local m = 1
 		while daysPast >= const.date.monthLength[m] do
 			daysPast = daysPast - const.date.monthLength[m]
+			if m == 2 and self.IsLeapYear(y) then
+				daysPast = daysPast - 1
+			end
 			m = m + 1
 		end
+
+		-- Day
 		local d = daysPast + 1
 
 		LibClockTST.needToUpdateDate = false
@@ -468,7 +519,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @see CalculateTST
 	function LibClockTST:GetTime(timestamp)
 		if timestamp then
-			assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
+			assert(self.IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
 			timestamp = tonumber(timestamp)
 			local tNeedToUpdateDate = self.needToUpdateDate
 			local t = CalculateTST(timestamp)
@@ -489,7 +540,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @see CalculateTSTDate
 	function LibClockTST:GetDate(timestamp)
 		if timestamp then
-			assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
+			assert(self.IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
 			timestamp = tonumber(timestamp)
 			local tNeedToUpdateDate = self.needToUpdateDate
 			local d = CalculateTSTDate(timestamp)
@@ -512,7 +563,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @see CalculateMoon
 	function LibClockTST:GetMoon(timestamp)
 		if timestamp then
-			assert(IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
+			assert(self.IsTimestamp(timestamp), "Please provide nil or a valid timestamp as an argument")
 			timestamp = tonumber(timestamp)
 			return CalculateMoon(timestamp)
 		else
@@ -527,9 +578,9 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @see GetTime
 	-- @see GetDate
 	function LibClockTST:Register(addonId, func)
-		assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
+		assert(self.IsNotNilOrEmpty(addonId),
+				"Please provide an ID for the addon. Store it to cancel the subscription later.")
 		assert(func, "Please provide a function: func(time, date) to be called every second for a time update.")
-		assert(not self.listener[addonId], addonId .. " already subscribes.")
 		self.listener[addonId] = func
 		em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 	end
@@ -538,8 +589,8 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- Will also stop background calculations if no addon is subscribing anymore.
 	-- @param addonId Id of the addon previous registered
 	function LibClockTST:CancelSubscription(addonId)
-		assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
-		assert(self.listener[addonId], "Subscription could not be found.")
+		assert(self.IsNotNilOrEmpty(addonId),
+				"Please provide an ID to cancel the subscription.")
 		self.listener[addonId] = nil
 		if #self.listener == 0 then
 			em:UnregisterForUpdate(eventHandle)
@@ -552,9 +603,9 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @see LibClockTST:Register
 	-- @see GetTime
 	function LibClockTST:RegisterForTime(addonId, func)
-		assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
+		assert(self.IsNotNilOrEmpty(addonId),
+				"Please provide an ID for the addon. Store it to cancel the subscription later.")
 		assert(func, "Please provide a function: func(time) to be called every second for a time update.")
-		assert(not self.timeListener[addonId], addonId .. " already subscribes.")
 		self.timeListener[addonId] = func
 		em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 	end
@@ -563,8 +614,8 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @param addonId Id of the addon previous registered
 	-- @see LibClockTST:CancelSubscription
 	function LibClockTST:CancelSubscriptionForTime(addonId)
-		assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
-		assert(self.timeListener[addonId], "Subscription could not be found.")
+		assert(self.IsNotNilOrEmpty(addonId),
+				"Please provide an ID to cancel the subscription.")
 		self.timeListener[addonId] = nil
 		if #self.timeListener == 0 then
 			em:UnregisterForUpdate(eventHandle.."-Time")
@@ -577,9 +628,9 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @see LibClockTST:Register
 	-- @see GetDate
 	function LibClockTST:RegisterForDate(addonId, func)
-		assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
+		assert(self.IsNotNilOrEmpty(addonId),
+				"Please provide an ID for the addon. Store it to cancel the subscription later.")
 		assert(func, "Please provide a function: func(date) to be called every second for a time update.")
-		assert(not self.dateListener[addonId], addonId .. " already subscribes.")
 		self.dateListener[addonId] = func
 		em:RegisterForUpdate(eventHandle, self.updateDelay, OnUpdate)
 	end
@@ -588,8 +639,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @param addonId Id of the addon previous registered
 	-- @see LibClockTST:CancelSubscription
 	function LibClockTST:CancelSubscriptionForDate(addonId)
-		assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
-		assert(self.dateListener[addonId], "Subscription could not be found.")
+		assert(self.IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
 		self.dateListener[addonId] = nil
 		if #self.dateListener == 0 then
 			em:UnregisterForUpdate(eventHandle.."-Date")
@@ -602,9 +652,9 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @see LibClockTST:Register
 	-- @see GetMoon
 	function LibClockTST:RegisterForMoon(addonId, func)
-		assert(IsNotNilOrEmpty(addonId), "Please provide an ID for the addon. Store it to cancel the subscription later.")
+		assert(self.IsNotNilOrEmpty(addonId),
+				"Please provide an ID for the addon. Store it to cancel the subscription later.")
 		assert(func, "Please provide a function: func(moon) to be called every second for a time update.")
-		assert(not self.moonListener[addonId], addonId .. " already subscribes.")
 		self.moonListener[addonId] = func
 		em:RegisterForUpdate(eventHandle.."-Moon", self.moonUpdateDelay, OnMoonUpdate) -- once per hour should be enough
 
@@ -617,8 +667,7 @@ function LibClockTST:New(updateDelay, moonUpdateDelay, countFullPhaseAsFull, sup
 	-- @param addonId Id of the addon previous registered
 	-- @see LibClockTST:CancelSubscription
 	function LibClockTST:CancelSubscriptionForMoon(addonId)
-		assert(IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
-		assert(self.moonListener[addonId], "Subscription could not be found.")
+		assert(self.IsNotNilOrEmpty(addonId), "Please provide an ID to cancel the subscription.")
 		self.moonListener[addonId] = nil
 		if #self.moonListener == 0  then
 			em:UnregisterForUpdate(eventHandle.."-Moon")

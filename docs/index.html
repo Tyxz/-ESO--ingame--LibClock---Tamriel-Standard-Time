@@ -65,13 +65,30 @@ License:    GPL-<span class="number">3.0</span>
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Instance">Instance ([super])</a></td>
+	<td class="name" nowrap><a href="#IsNotNilOrEmpty">IsNotNilOrEmpty (obj)</a></td>
+	<td class="summary">Check if string is nil or empty</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#IsTimestamp">IsTimestamp (timestamp)</a></td>
+	<td class="summary">Check if input is a timestamp</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#IsLeapYear">IsLeapYear (year)</a></td>
+	<td class="summary">Test if the current year is a leap year</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetWeekDay">GetWeekDay (table)</a></td>
+	<td class="summary">Calculate the week day based on a given year, month and day
+ https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Gauss&rsquo;s_algorithm</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Instance">Instance ()</a></td>
 	<td class="summary">Instance of library
  You can either get a singleton instance,
  or create your custom instance with your specific delays.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#New">New (updateDelay, moonUpdateDelay[, countFullPhaseAsFull[, super]])</a></td>
+	<td class="name" nowrap><a href="#New">New (updateDelay, moonUpdateDelay[, countFullPhaseAsFull])</a></td>
 	<td class="summary">Constructor
  Create a object to use custom delays between updates.</td>
 	</tr>
@@ -192,8 +209,109 @@ License:    GPL-<span class="number">3.0</span>
 
     <dl class="function">
     <dt>
+    <a name = "IsNotNilOrEmpty"></a>
+    <strong>IsNotNilOrEmpty (obj)</strong>
+    </dt>
+    <dd>
+    Check if string is nil or empty
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         string to be checked
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        bool if it is not nil or empty
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "IsTimestamp"></a>
+    <strong>IsTimestamp (timestamp)</strong>
+    </dt>
+    <dd>
+    Check if input is a timestamp
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timestamp</span>
+         object to be checked
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        bool if it matches the condition
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "IsLeapYear"></a>
+    <strong>IsLeapYear (year)</strong>
+    </dt>
+    <dd>
+    Test if the current year is a leap year
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">year</span>
+         has to be an integer with the full year length
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        bool if year is a leap year
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetWeekDay"></a>
+    <strong>GetWeekDay (table)</strong>
+    </dt>
+    <dd>
+    Calculate the week day based on a given year, month and day
+ https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Gauss&rsquo;s_algorithm
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">table</span>
+         like {year = 2020, month = 2, day = 16}
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        week day as a number from 1 (Monday) to 7 (Sunday)
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "Instance"></a>
-    <strong>Instance ([super])</strong>
+    <strong>Instance ()</strong>
     </dt>
     <dd>
     Instance of library
@@ -201,13 +319,6 @@ License:    GPL-<span class="number">3.0</span>
  or create your custom instance with your specific delays.
 
 
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">super</span>
-         is the parent class it should take its values from.
-         (<em>optional</em>)
-        </li>
-    </ul>
 
     <h3>Returns:</h3>
     <ol>
@@ -221,7 +332,7 @@ License:    GPL-<span class="number">3.0</span>
 </dd>
     <dt>
     <a name = "New"></a>
-    <strong>New (updateDelay, moonUpdateDelay[, countFullPhaseAsFull[, super]])</strong>
+    <strong>New (updateDelay, moonUpdateDelay[, countFullPhaseAsFull])</strong>
     </dt>
     <dd>
     Constructor
@@ -240,10 +351,6 @@ License:    GPL-<span class="number">3.0</span>
         <li><span class="parameter">countFullPhaseAsFull</span>
          is default false.
  It decides, if the whole full moon phase is counted as full (100%) or the phase is treated as any other.
-         (<em>optional</em>)
-        </li>
-        <li><span class="parameter">super</span>
-         is the parent class it should take its values from.
          (<em>optional</em>)
         </li>
     </ul>
@@ -659,6 +766,9 @@ License:    GPL-<span class="number">3.0</span>
         <li><span class="parameter">yearLength</span>
         length of the in-game year in days
         </li>
+        <li><span class="parameter">leaps</span>
+        number of leaps in this era, assuming, that year 2E4 and 2E400 are leap years
+        </li>
     </ul>
 
 
@@ -937,7 +1047,7 @@ License:    GPL-<span class="number">3.0</span>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-02-14 14:33:37 </i>
+<i style="float:right;">Last updated 2020-02-16 16:42:53 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
