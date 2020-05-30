@@ -17,9 +17,9 @@
 ## Title: LibClockTST-1.0
 ## Description: Library to get the time in Tamriel.
 ## Author: |c0080ffTyx|r
-## Version 1.0.0
+## Version 1.0.1
 ## AddOnVersion: 0
-## APIVersion: 100029 100030
+## APIVersion: 100031
 ## IsLibrary: true
 
 ####################
